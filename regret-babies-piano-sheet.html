@@ -89,12 +89,13 @@
 
 <header>
   <h1>リグレットベイビーズ <small>Laura day romance — 初心者向け簡単コード ver.</small></h1>
-  <div class="meta"><span>4/4</span><span id="keyLabel"></span><span>カポなし</span></div>
+  <div class="meta"><span>4/4</span><span id="keyLabel"></span><span>簡単ver.は原曲より−3転調（掲載C / 原曲E♭）</span></div>
   <div class="spacer"></div>
   <div class="controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <button id="trDown" title="Transpose down">−</button>
     <span class="trval" id="trVal"></span>
     <button id="trUp" title="Transpose up">＋</button>
+    <button id="tPub" title="Show the chart as U-FRET publishes it (easy ver., C — 3 semitones below the recording)">As published (C)</button>
     <span style="width:8px"></span>
     <button id="btnScroll" title="Auto-scroll the sheet (Space)">▼ Auto-scroll</button>
     <select id="scrollSpeed" title="Scroll speed">
@@ -108,7 +109,7 @@
     <button id="btnPrint">🖨 Print</button>
   </div>
   <div class="legend" style="flex-basis:100%">
-    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> U-FRETにはタイムスタンプ・セクション名がないため、区切りは構造からの推定、リズムは1コード=2拍のデフォルト。
+    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> U-FRETにはタイムスタンプ・セクション名がないため、区切りは構造からの推定、リズムは1コード=2拍のデフォルト。簡単ver.は原曲より3半音低い掲載 — 既定表示は+3（原曲キーE♭）。
   </div>
 </header>
 
@@ -241,7 +242,8 @@
   const rhythmOf = k => RHYTHM[k];
   const chordsOf = k => { const [si, li] = k.split("-"); return SONG.sections[si].lines[li].ch; };
 
-  let tr = 0, bassMode = false;
+  // The easy-ver chart is published 3 semitones BELOW the recording — UI zero = recording key (+3).
+  let tr = 3, bassMode = false;
   try { bassMode = localStorage.getItem("regretbabies-bass-mode") === "1"; } catch (_) {}
 
   /* ===== keyboard diagrams ===== */
@@ -318,8 +320,10 @@
   }
   let lineNo = 0;
   function render() {
-    $("keyLabel").innerHTML = tr === 0 ? "Key: <b>C / Am（掲載どおり）</b>" : "Key: <b>" + FLAT[(tr + 120) % 12] + "</b>";
-    $("trVal").innerHTML = (tr > 0 ? "+" + tr : tr === 0 ? "±0" : tr) + `<small>${tr === 0 ? "as published" : "transposed"}</small>`;
+    const shown = tr - 3;
+    $("keyLabel").innerHTML = tr === 3 ? "Key: <b>E♭ / Cm（原曲キー）</b>" : tr === 0 ? "Key: <b>C / Am（簡単ver.掲載キー）</b>" : "Key: <b>" + FLAT[(tr + 120) % 12] + "</b>";
+    $("trVal").innerHTML = (shown > 0 ? "+" + shown : shown === 0 ? "±0" : shown) + `<small>${tr === 3 ? "recording key (E♭)" : tr === 0 ? "as published (C)" : "transposed"}</small>`;
+    $("tPub").classList.toggle("active", tr === 0);
     $("btnBass").classList.toggle("active", bassMode);
     lineNo = 0;
     $("sheet").innerHTML = SONG.sections.map((sec, si) => `
@@ -343,8 +347,9 @@
       }).join("")}`).join("");
   }
 
-  $("trUp").addEventListener("click", () => { tr = Math.min(6, tr + 1); render(); });
-  $("trDown").addEventListener("click", () => { tr = Math.max(-6, tr - 1); render(); });
+  $("trUp").addEventListener("click", () => { tr = Math.min(9, tr + 1); render(); });
+  $("trDown").addEventListener("click", () => { tr = Math.max(-3, tr - 1); render(); });
+  $("tPub").addEventListener("click", () => { tr = tr === 0 ? 3 : 0; render(); });
   $("btnPrint").addEventListener("click", () => window.print());
   $("btnBass").addEventListener("click", () => {
     bassMode = !bassMode;
