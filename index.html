@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Piano Chord Sheets</title>
+<style>
+  :root {
+    --ink: #1c1c22; --muted: #6b6b76; --line: #e2e2e8; --accent: #5b4bd4;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #f6f6f8; color: var(--ink); font-family: var(--font); font-size: 15px; }
+
+  header { padding: 34px 18px 6px; text-align: center; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
+  header p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+
+  main { max-width: 1040px; margin: 0 auto; padding: 22px 16px 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 18px;
+  }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(20,20,30,.05);
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+  }
+  a.card:hover, a.card:focus-visible {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 24px rgba(60,50,150,.14);
+    outline: none;
+  }
+  a.card:active { transform: translateY(0); }
+  .cover {
+    aspect-ratio: 16 / 9; width: 100%;
+    background: #e9e9f0;
+    overflow: hidden;
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .body { padding: 12px 14px 14px; }
+  .title { font-size: 17px; font-weight: 800; margin: 0; }
+  .artist { color: var(--muted); font-size: 12.5px; margin: 3px 0 8px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .badge {
+    font-size: 10.5px; color: var(--muted);
+    background: #f1f1f6; border: 1px solid var(--line);
+    border-radius: 20px; padding: 2px 9px; white-space: nowrap;
+  }
+  .badge.hi { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+  footer { text-align: center; color: var(--muted); font-size: 11.5px; padding: 10px 16px 36px; line-height: 1.6; }
+
+  @media (max-width: 480px) {
+    header { padding-top: 24px; }
+    header h1 { font-size: 22px; }
+    .grid { grid-template-columns: 1fr; gap: 14px; }
+    .title { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎹 Piano Chord Sheets</h1>
+  <p>コード進行と拍グリッドをピアノ鍵盤図で — タップで各シートへ</p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <a class="card" href="isho-piano-sheet.html">
+      <div class="cover"><img src="https://i.ytimg.com/vi/bcEDagHXQEU/hqdefault.jpg" alt="遺書 cover" loading="lazy" /></div>
+      <div class="body">
+        <h2 class="title">遺書</h2>
+        <p class="artist">キタニタツヤ — TVアニメ『これ描いて死ね』OP</p>
+        <div class="badges">
+          <span class="badge hi">動画同期</span>
+          <span class="badge">BPM 142</span>
+          <span class="badge">Key D♭（カポ譜C）</span>
+          <span class="badge">Simple / Detailed / Hybrid</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="nekobi-piano-sheet.html">
+      <div class="cover"><img src="https://i.ytimg.com/vi/nvcVUq1g1z8/hqdefault.jpg" alt="猫日 cover" loading="lazy" /></div>
+      <div class="body">
+        <h2 class="title">猫日</h2>
+        <p class="artist">suis from ヨルシカ — TVアニメ「猫と竜」OPテーマ</p>
+        <div class="badges">
+          <span class="badge hi">動画同期</span>
+          <span class="badge">BPM 98</span>
+          <span class="badge">Key C</span>
+          <span class="badge">Simple / Detailed / Hybrid</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="regret-babies-piano-sheet.html">
+      <div class="cover"><img src="https://i.ytimg.com/vi/9Jv4zj-1PfY/hqdefault.jpg" alt="リグレットベイビーズ cover" loading="lazy" /></div>
+      <div class="body">
+        <h2 class="title">リグレットベイビーズ</h2>
+        <p class="artist">Laura day romance</p>
+        <div class="badges">
+          <span class="badge">簡単コード ver.</span>
+          <span class="badge">Key C / Am</span>
+          <span class="badge">カポなし</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- To add a sheet: copy a card above — cover = https://i.ytimg.com/vi/<VIDEO_ID>/hqdefault.jpg -->
+
+  </div>
+</main>
+
+<footer>
+  各シートはコード進行・拍位置・セクション構成のみを掲載（歌詞なし）。<br />
+  鍵盤図: ◉ ルート音（最低音）· 紫 = コードトーン · LH = 左手ベース音。
+</footer>
+
+</body>
+</html>
