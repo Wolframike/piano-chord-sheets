@@ -74,6 +74,20 @@
     main { padding: 12px 10px 60px; }
     .meas { min-width: 260px; }
   }
+  .hdrToggle { display: none; }
+  @media (max-width: 640px) {
+    header { padding: 8px 12px; gap: 6px 10px; }
+    header h1 { font-size: 16px; }
+    header h1 small { display: block; margin: 2px 0 0; font-size: 11px; }
+    .hdrToggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-left: auto; width: 36px; padding: 0; flex: 0 0 auto; font-size: 16px;
+    }
+    .spacer { display: none; }
+    .meta, .controls, .legend { display: none !important; }
+    header.open .meta, header.open .controls { display: flex !important; }
+    header.open .legend { display: block !important; }
+  }
   @media print {
     html, body { background: #fff; }
     header { position: static; backdrop-filter: none; }
@@ -89,6 +103,7 @@
 
 <header>
   <h1>リグレットベイビーズ <small>Laura day romance — 初心者向け簡単コード ver.</small></h1>
+  <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
   <div class="meta"><span>4/4</span><span id="keyLabel"></span><span>簡単ver.は原曲より−3転調（掲載C / 原曲E♭）</span></div>
   <div class="spacer"></div>
   <div class="controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -351,6 +366,7 @@
   $("trDown").addEventListener("click", () => { tr = Math.max(-3, tr - 1); render(); });
   $("tPub").addEventListener("click", () => { tr = tr === 0 ? 3 : 0; render(); });
   $("btnPrint").addEventListener("click", () => window.print());
+  $("btnHdr").addEventListener("click", () => document.querySelector("header").classList.toggle("open"));
   $("btnBass").addEventListener("click", () => {
     bassMode = !bassMode;
     try { localStorage.setItem("regretbabies-bass-mode", bassMode ? "1" : "0"); } catch (_) {}

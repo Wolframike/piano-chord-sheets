@@ -104,6 +104,20 @@
     main { padding: 12px 10px 60px; }
     .meas { min-width: 260px; }
   }
+  .hdrToggle { display: none; }
+  @media (max-width: 640px) {
+    header { padding: 8px 12px; gap: 6px 10px; }
+    header h1 { font-size: 16px; }
+    header h1 small { display: block; margin: 2px 0 0; font-size: 11px; }
+    .hdrToggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-left: auto; width: 36px; padding: 0; flex: 0 0 auto; font-size: 16px;
+    }
+    .spacer { display: none; }
+    .meta, .controls, .legend { display: none !important; }
+    header.open .meta, header.open .controls { display: flex !important; }
+    header.open .legend { display: block !important; }
+  }
   @media print {
     .ytdock { display: none !important; }
     html, body { background: #fff; }
@@ -120,6 +134,7 @@
 
 <header>
   <h1>猫日 <small>suis from ヨルシカ — TVアニメ「猫と竜」OPテーマ</small></h1>
+  <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
   <div class="meta"><span><b>BPM 98</b></span><span>4/4</span><span id="keyLabel"></span></div>
   <div class="spacer"></div>
   <div class="controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -483,6 +498,7 @@
   $("trUp").addEventListener("click", () => { tr = Math.min(6, tr + 1); render(); });
   $("trDown").addEventListener("click", () => { tr = Math.max(-6, tr - 1); render(); });
   $("btnPrint").addEventListener("click", () => window.print());
+  $("btnHdr").addEventListener("click", () => document.querySelector("header").classList.toggle("open"));
   $("btnBass").addEventListener("click", () => {
     bassMode = !bassMode;
     try { localStorage.setItem("nekobi-bass-mode", bassMode ? "1" : "0"); } catch (_) {}
