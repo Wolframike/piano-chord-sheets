@@ -88,10 +88,59 @@
     header.open .meta, header.open .controls { display: flex !important; }
     header.open .legend { display: block !important; }
   }
+  .home {
+    flex: 0 0 auto; display: inline-flex; align-items: center;
+    color: var(--muted); text-decoration: none; font-size: 12px;
+    border: 1px solid #ccc; border-radius: 7px; height: 30px; padding: 0 10px; background: #fff;
+  }
+  .home:hover { color: var(--accent); border-color: var(--accent); }
+  .ytdock .ytx {
+    position: absolute; top: -10px; right: -8px; width: 26px; height: 26px; padding: 0;
+    border-radius: 50%; font-size: 12px; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,.25); z-index: 1;
+  }
+  body.dockopen main { padding-bottom: 320px; }
+  @media (max-width: 640px) {
+    .home { height: 26px; padding: 0 8px; font-size: 11px; }
+    main { padding-left: 8px; padding-right: 8px; }
+    .lrow { gap: 6px; }
+    .t { width: 30px; font-size: 10px; }
+    .line { padding: 8px 8px; }
+    .meas {
+      height: auto; min-height: 96px; display: flex; flex-wrap: wrap;
+      gap: 2px 6px; padding: 3px 0; background-image: none;
+      flex: 1 1 300px;
+    }
+    .cc {
+      position: static; left: auto !important; width: auto !important;
+      flex: var(--w, 100) 1 0px; min-width: 140px; max-width: 100%;
+    }
+    .cc .hands { white-space: normal; }
+    .cc svg { max-width: 200px; }
+    .t.seek { padding-bottom: 12px; }
+    header h1 { flex: 1 1 0; min-width: 0; }
+    .meas.empty, .meas:has(> .cc.nc:only-child) { min-height: 48px; flex-basis: 120px; min-width: 120px; }
+    .cc.nc { min-width: 90px; }
+  }
+  .themeBtn { width: 36px; padding: 0; font-size: 14px; flex: 0 0 auto; }
+  html.dark { color-scheme: dark; --ink: #e7e7ec; --muted: #9a9aa8; --line: #2b2b33; --accent: #8b7cf7; --lh: #ff6d9d; }
+  html.dark body { background: #121216; }
+  html.dark header { background: rgba(22,22,27,.94); }
+  html.dark button, html.dark select, html.dark .home, html.dark .ytdock .ytc input { background: #26262e; border-color: #3a3a44; color: var(--ink); }
+  html.dark button:hover { background: #32323e; }
+  html.dark button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  html.dark .line { background: #1b1b21; }
+  html.dark .line.now { background: #201d2e; }
+  html.dark .meas { border-left-color: #43434f; background-image: repeating-linear-gradient(to right, transparent, transparent calc(25% - 1px), #26262e calc(25% - 1px), #26262e 25%); }
+  html.dark .meas.empty::after { color: #61616e; }
+  html.dark .t { color: #6b6b7a; }
+  html.dark .ytdock { background: #1b1b21; }
+  @media (max-width: 640px) {
+    html.dark .meas { background-image: none; }
+  }
   @media print {
     html, body { background: #fff; }
     header { position: static; backdrop-filter: none; }
-    header .controls, header .legend { display: none; }
+    header .controls, header .legend, .home, .hdrToggle { display: none; }
     main { max-width: none; padding: 0; }
     .line { break-inside: avoid; border-color: #ccc; }
     h2.sec { break-after: avoid; }
@@ -102,7 +151,9 @@
 <body>
 
 <header>
+  <a class="home" href="index.html" aria-label="曲一覧へ戻る">◀ 曲一覧</a>
   <h1>リグレットベイビーズ <small>Laura day romance — 初心者向け簡単コード ver.</small></h1>
+  <button id="btnTheme" class="themeBtn" aria-label="ダーク/ライト切替" title="ダーク/ライト切替">🌙</button>
   <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
   <div class="meta"><span>4/4</span><span id="keyLabel"></span><span>簡単ver.は原曲より−3転調（掲載C / 原曲E♭）</span></div>
   <div class="spacer"></div>
@@ -313,7 +364,7 @@
   /* ===== render ===== */
   const $ = id => document.getElementById(id);
   function chordCell(sym, slot, sub, leftPct, widthPct) {
-    const posStyle = `style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%"`;
+    const posStyle = `style="left:${leftPct.toFixed(3)}%;width:${widthPct.toFixed(3)}%;--w:${widthPct.toFixed(1)}"`;
     if (sym === "N.C.") return `<div class="cc nc" ${posStyle}><span>N.C.</span><small>break</small></div>`;
     const v = voicing(sym, tr);
     const sh = v.sharpish && tr === 0;
@@ -366,6 +417,23 @@
   $("trDown").addEventListener("click", () => { tr = Math.max(-3, tr - 1); render(); });
   $("tPub").addEventListener("click", () => { tr = tr === 0 ? 3 : 0; render(); });
   $("btnPrint").addEventListener("click", () => window.print());
+  const THEME_KEY = "pcs-theme";
+  function applyTheme(t) {
+    document.documentElement.classList.toggle("dark", t === "dark");
+    $("btnTheme").textContent = t === "dark" ? "\u2600\ufe0e" : "\ud83c\udf19";
+  }
+  let theme;
+  try { theme = localStorage.getItem(THEME_KEY); } catch (_) {}
+  if (!theme) theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  applyTheme(theme);
+  $("btnTheme").addEventListener("click", () => {
+    theme = theme === "dark" ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+    applyTheme(theme);
+  });
+  window.addEventListener("beforeprint", () => document.documentElement.classList.remove("dark"));
+  window.addEventListener("afterprint", () => applyTheme(theme));
+
   $("btnHdr").addEventListener("click", () => document.querySelector("header").classList.toggle("open"));
   $("btnBass").addEventListener("click", () => {
     bassMode = !bassMode;
