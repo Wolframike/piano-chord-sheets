@@ -120,7 +120,7 @@
 <header>
   <h1>軽忽な救済を待つ醜さには一片の夾竹桃を <small>こんにちは谷田さん feat. 鏡音リン</small></h1>
   <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
-  <div class="meta"><span><b>BPM 196</b></span><span>4/4</span><span id="keyLabel"></span><span>カポなし</span></div>
+  <div class="meta"><span><b>BPM ≈200</b>（実測 / ChordWiki表記196）</span><span>4/4</span><span id="keyLabel"></span><span>カポなし</span></div>
   <div class="spacer"></div>
   <div class="controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <button id="trDown" title="Transpose down">−</button>
@@ -141,7 +141,7 @@
     <button id="btnPrint">🖨 Print</button>
   </div>
   <div class="legend" style="flex-basis:100%">
-    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> 拍はChordWikiのダッシュ記譜（−＝4分音符）から採譜。無印コードは1小節（4拍）と解釈。行頭の時刻はBPM 196の等速時計による計算値。
+    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> 拍はChordWikiのダッシュ記譜（−＝4分音符）から採譜。無印コードは1小節（4拍）と解釈。行頭の時刻はBPM 200（Chordify実測）の等速時計による計算値。動画はキタニカバーver（開始オフセット約2.7秒）。⚠ ChordWiki譜は2番相当（約60秒分）を省略している可能性が高く、1番サビ以降は音源と構成がずれる場合がある — コードは全区間ChordWiki準拠。
   </div>
 </header>
 
@@ -164,8 +164,9 @@
 "use strict";
 (function () {
   /* ===== song data: chords + exact beat durations from ChordWiki dash notation ===== */
-  const ORIG_BPM = 196;
-  const VIDEO_ID = "TTauGwXhxdc";
+  const ORIG_BPM = 200;              // measured (Chordify beat-track of the cover); ChordWiki writes 196
+  const VIDEO_ID = "Y3d-X6h79sk";    // キタニカバーver（キタニタツヤを解放せよ 第6回）— the Chordify-analyzed upload
+  const DEFAULT_OFFSET = 2.7;        // music starts ~2.7s into the video (Chordify N-beats 0-8)
   const bar1 = ch => ({ ch: ch, pos: ch.map((_, i) => [i, 0]) });   // one chord per bar
   const LOOP_FG = () => bar1(["FM7","FM7","G","G"]);
   const LOOP_EA = () => bar1(["Em","Em","Am","Am"]);
@@ -175,8 +176,8 @@
   const CHOR_C = () => bar1(["Dm","Em","FM7","G"]);
   const SONG = { sections: [
     { name: "イントロ", note: "N.C.→Am のピックアップ2小節 + ループ", lines: [
-      bar1(["N.C."]),
-      bar1(["Am"]),
+      bar1(["N.C.","N.C.","N.C.","N.C."]),   // ChordWiki: N.C. ×4小節
+      bar1(["Am","Am","Am","Am"]),           // ChordWiki: Am ×4小節
       LOOP_FG(), LOOP_EA(), LOOP_FG(), LOOP_SUS(),
     ]},
     { name: "ブロック 1（ボーカル）", lines: [
@@ -424,7 +425,8 @@
   /* ===== YouTube video sync (BPM-clock anchors: assumes steady 196) ===== */
   let yt = null, ytReady = false, syncOn = false, syncRaf = 0, anchors = [];
   let syncOffset = 0;
-  try { syncOffset = parseFloat(localStorage.getItem("kyochikuto-sync-offset")) || 0; } catch (_) {}
+  syncOffset = DEFAULT_OFFSET;
+  try { const v = localStorage.getItem("kyochikuto-sync-offset"); if (v !== null && v !== "") syncOffset = parseFloat(v) || 0; } catch (_) {}
   $("syncOff").value = syncOffset;
 
   function buildAnchors() {
@@ -526,7 +528,7 @@
     const all = new Set();
     let count = 0;
     allLines.forEach(r => r.ln.ch.forEach(s => { all.add(s); count++; }));
-    if (count !== 148) { console.error("SHEET SELFTEST count FAIL", count); fail++; }
+    if (count !== 154) { console.error("SHEET SELFTEST count FAIL", count); fail++; }   // 148 + intro ×4 expansions
     all.forEach(s => { if (s !== "N.C.") try { parseChord(s); } catch (e) { console.error("SHEET SELFTEST FAIL", s); fail++; } });
     const T = [["Dadd9",[2,6,9,4],2], ["Asus4",[9,2,4],9], ["E7",[4,8,11,2],4], ["FM7",[5,9,0,4],5], ["D7",[2,6,9,0],2]];
     T.forEach(([sym, pcs, bass]) => {
@@ -538,7 +540,7 @@
       const k = r.si + "-" + r.li, R = RHYTHM[k];
       if (!R || R.pos.length !== r.ln.ch.length || R.pos.some(p => p[0] >= R.subs.length || p[1] < 0 || p[1] >= 8)) { console.error("SHEET SELFTEST rhythm FAIL", k); fail++; }
     });
-    console.log(fail ? `SHEET SELFTEST: ${fail} FAILURES` : `SHEET SELFTEST OK (${all.size} symbols, ${count} chords, ${allLines.length} lines, ${fmtT(songEndSec)} @196)`);
+    console.log(fail ? `SHEET SELFTEST: ${fail} FAILURES` : `SHEET SELFTEST OK (${all.size} symbols, ${count} chords, ${allLines.length} lines, ${fmtT(songEndSec)} @${ORIG_BPM})`);
   })();
 
   render();
