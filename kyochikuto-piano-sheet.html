@@ -120,7 +120,7 @@
 <header>
   <h1>軽忽な救済を待つ醜さには一片の夾竹桃を <small>こんにちは谷田さん feat. 鏡音リン</small></h1>
   <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
-  <div class="meta"><span><b>BPM ≈200</b>（実測 / ChordWiki表記196）</span><span>4/4</span><span id="keyLabel"></span><span>カポなし</span></div>
+  <div class="meta"><span><b>BPM ≈196</b>（実測平均・変動あり）</span><span>4/4</span><span id="keyLabel"></span><span>カポなし</span></div>
   <div class="spacer"></div>
   <div class="controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <button id="trDown" title="Transpose down">−</button>
@@ -135,13 +135,13 @@
       <option value="sync">♪ Song tempo</option>
     </select>
     <span style="width:8px"></span>
-    <button id="btnVideo" title="Open the YouTube player and sync scrolling to the song (200 BPM clock)">🎥 Video sync</button>
+    <button id="btnVideo" title="Open the YouTube player and sync scrolling to the song (measured bar timeline)">🎥 Video sync</button>
     <button id="btnBass" title="Show only the lowest note to play (the bass) for each chord">Bass only</button>
     <span style="width:8px"></span>
     <button id="btnPrint">🖨 Print</button>
   </div>
   <div class="legend" style="flex-basis:100%">
-    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> 拍はChordWikiのダッシュ記譜（−＝4分音符）から採譜。無印コードは1小節（4拍）と解釈。行頭の時刻はBPM 200（Chordify実測）の等速時計による計算値。動画はキタニカバーver（開始オフセット約2.7秒）。⚠ ChordWiki譜は2番相当（約60秒分）を省略している可能性が高く、1番サビ以降は音源と構成がずれる場合がある — コードは全区間ChordWiki準拠。
+    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> 拍はChordWikiのダッシュ記譜（−＝4分音符）から採譜。無印コードは1小節（4拍）と解釈。行頭の時刻は動画（キタニカバーver）の実測小節タイム（Chordifyビートトラッキング）。ボーカル部は基本1コード=2小節、ターンアラウンド（Dm Em FM7 G）は1コード=1小節 — 実測で確認済み。コードは全区間ChordWiki準拠。
   </div>
 </header>
 
@@ -166,37 +166,42 @@
   /* ===== song data: chords + exact beat durations from ChordWiki dash notation ===== */
   const ORIG_BPM = 200;              // measured (Chordify beat-track of the cover); ChordWiki writes 196
   const VIDEO_ID = "Y3d-X6h79sk";    // キタニカバーver（キタニタツヤを解放せよ 第6回）— the Chordify-analyzed upload
-  const DEFAULT_OFFSET = 2.7;        // music starts ~2.7s into the video (Chordify N-beats 0-8)
-  const bar1 = ch => ({ ch: ch, pos: ch.map((_, i) => [i, 0]) });   // one chord per bar
+  const DEFAULT_OFFSET = 0;          // anchors below are absolute video times (Chordify beat-track)
+  const bar1 = ch => ({ ch: ch, pos: ch.map((_, i) => [i, 0]) });                  // one chord per bar
+  const bars = (ch, spans) => {                                                    // per-chord bar spans
+    let b = 0;
+    const pos = spans.map(s => { const p = [b, 0]; b += s; return p; });
+    return { ch, pos, M: b };                                                      // M = true total bars
+  };
   const LOOP_FG = () => bar1(["FM7","FM7","G","G"]);
   const LOOP_EA = () => bar1(["Em","Em","Am","Am"]);
   const LOOP_SUS = () => ({ ch: ["Em","Em","Am","Asus4","A"], pos: [[0,0],[1,0],[2,0],[3,0],[3,4]] });
-  const CHOR_A = () => bar1(["FM7","G","Em","Am"]);
-  const CHOR_B = () => bar1(["Dm","E","Am","A"]);
-  const CHOR_C = () => bar1(["Dm","Em","FM7","G"]);
+  const CHOR_A = () => bars(["FM7","G","Em","Am"], [2,2,2,2]);   // vocal sections: 2 bars per chord (measured)
+  const CHOR_B = () => bars(["Dm","E","Am","A"], [2,2,2,2]);
+  const CHOR_C = () => bar1(["Dm","Em","FM7","G"]);              // turnarounds stay 1 bar per chord (measured)
   const SONG = { sections: [
-    { name: "イントロ", note: "N.C.→Am のピックアップ2小節 + ループ", lines: [
-      bar1(["N.C.","N.C.","N.C.","N.C."]),   // ChordWiki: N.C. ×4小節
-      bar1(["Am","Am","Am","Am"]),           // ChordWiki: Am ×4小節
+    { name: "イントロ", note: "N.C.→Am ×4小節ずつ + ループ", lines: [
+      bar1(["N.C.","N.C.","N.C.","N.C."]),
+      bar1(["Am","Am","Am","Am"]),
       LOOP_FG(), LOOP_EA(), LOOP_FG(), LOOP_SUS(),
     ]},
-    { name: "ブロック 1（ボーカル）", lines: [
+    { name: "ブロック 1（ボーカル）", note: "ボーカル部は基本1コード=2小節", lines: [
       bar1(["FM7","N.C.","G","N.C.","Am"]),
       bar1(["N.C.","D7","N.C."]),
-      bar1(["FM7","G","Em","Am","A"]),
-      bar1(["FM7","G","Am","D7"]),
+      bars(["FM7","G","Em","Am","A"], [2,2,2,1,1]),
+      bars(["FM7","G","Am","D7"], [2,2,2,2]),
       CHOR_C(),
       CHOR_A(),
-      bar1(["Dm","E"]),
+      bars(["Dm","E"], [2,2]),
       CHOR_A(),
       CHOR_C(),
     ]},
     { name: "間奏", lines: [ LOOP_FG(), LOOP_EA(), LOOP_FG(), LOOP_SUS() ]},
     { name: "ブロック 2（ボーカル）", lines: [
-      bar1(["FM7","G","Em"]),
-      bar1(["Am","FM7","G","Em"]),
+      bars(["FM7","G","Em"], [2,2,2]),
+      bars(["Am","FM7","G","Em"], [2,2,2,2]),
       bar1(["Am","A"]),
-      bar1(["Dadd9","E7"]),
+      bars(["Dadd9","E7"], [2,2]),
     ]},
     { name: "ブリッジ", note: "Am → A", lines: [ bar1(["Am","Am","A","A"]) ]},
     { name: "ブロック 3（サビ相当）", lines: [ CHOR_A(), CHOR_B(), CHOR_A(), CHOR_C() ]},
@@ -207,6 +212,17 @@
     { name: "ブロック 4（サビ相当・2回目）", lines: [ CHOR_A(), CHOR_B(), CHOR_A(), CHOR_C() ]},
     { name: "アウトロ", lines: [ LOOP_FG(), LOOP_EA(), LOOP_FG(), LOOP_SUS() ]},
   ]};
+  // real bar-start time of each line in the video (Chordify beat-track, non-uniform tempo)
+  const ANCHORS = [0.12, 5.02, 9.90, 14.78, 19.68, 24.58,
+    29.48, 35.62, 39.28, 49.08, 58.88, 63.78, 73.58, 78.48, 88.28,
+    93.14, 98.04, 102.94, 107.84,
+    112.74, 120.10, 129.90, 132.36,
+    137.24,
+    142.14, 151.94, 161.72, 171.52,
+    176.42, 181.32, 186.22,
+    191.14, 200.90, 210.72, 220.50,
+    225.38, 230.28, 234.90, 239.76];
+  const SONG_END = 245.9;
 
   /* ===== chord theory ===== */
   const PC = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
@@ -249,19 +265,16 @@
     return { rootPc, bassPc, rh: c.iv.map(i => 60 + rootPc + i), sharpish: c.sharpish };
   }
 
-  /* ===== timeline: exact bars at 196 BPM ===== */
+  /* ===== timeline: measured bar-start times (Chordify beat-track of the video) ===== */
   const allLines = [];
   SONG.sections.forEach((sec, si) => sec.lines.forEach((ln, li) => allLines.push({ si, li, ln })));
-  const RHYTHM = {}, lineStartSec = [];
-  const measDur = 240 / ORIG_BPM;
-  let cumMeas = 0;
+  const RHYTHM = {};
+  const lineStartSec = ANCHORS;
   allLines.forEach(row => {
-    const M = Math.max(...row.ln.pos.map(p => p[0])) + 1;
+    const M = row.ln.M || Math.max(...row.ln.pos.map(p => p[0])) + 1;
     RHYTHM[row.si + "-" + row.li] = { subs: Array(M).fill(8), pos: row.ln.pos };
-    lineStartSec.push(cumMeas * measDur);
-    cumMeas += M;
   });
-  const songEndSec = cumMeas * measDur;
+  const songEndSec = SONG_END;
   const rhythmOf = k => RHYTHM[k];
   const chordsOf = k => { const [si, li] = k.split("-"); return SONG.sections[si].lines[li].ch; };
   const fmtT = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
@@ -426,7 +439,7 @@
   let yt = null, ytReady = false, syncOn = false, syncRaf = 0, anchors = [];
   let syncOffset = 0;
   syncOffset = DEFAULT_OFFSET;
-  try { const v = localStorage.getItem("kyochikuto-sync-offset"); if (v !== null && v !== "") syncOffset = parseFloat(v) || 0; } catch (_) {}
+  try { const v = localStorage.getItem("kyochikuto-sync-offset-v2"); if (v !== null && v !== "") syncOffset = parseFloat(v) || 0; } catch (_) {}
   $("syncOff").value = syncOffset;
 
   function buildAnchors() {
@@ -517,7 +530,7 @@
   $("syncOff").addEventListener("change", e => {
     syncOffset = parseFloat(e.target.value) || 0;
     e.target.value = syncOffset;
-    try { localStorage.setItem("kyochikuto-sync-offset", String(syncOffset)); } catch (_) {}
+    try { localStorage.setItem("kyochikuto-sync-offset-v2", String(syncOffset)); } catch (_) {}
   });
   window.addEventListener("resize", buildAnchors);
   window.__sheet = { get yt() { return yt; }, get anchors() { return anchors; }, startSync, stopSync, songY };
