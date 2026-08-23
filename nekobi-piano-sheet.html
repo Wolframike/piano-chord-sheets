@@ -167,6 +167,16 @@
   @media (max-width: 640px) {
     html.dark .meas { background-image: none; }
   }
+  .ytdock .seekrow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .ytdock .seekrow button { width: 40px; flex: 0 0 auto; }
+  .ytdock .seekrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); height: 26px; margin: 0; }
+  .ytdock .tlab { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+  .ytdock.mini #ytplayer { height: 80px !important; }
+  body.dockopen.dockmini main { padding-bottom: 220px; }
+  .vidQk { display: none; }
+  @media (max-width: 640px) {
+    .vidQk { display: inline-flex; align-items: center; justify-content: center; width: 36px; padding: 0; flex: 0 0 auto; font-size: 14px; }
+  }
   @media print {
     .ytdock { display: none !important; }
     html, body { background: #fff; }
@@ -184,6 +194,7 @@
 <header>
   <a class="home" href="index.html" aria-label="曲一覧へ戻る">◀ 曲一覧</a>
   <h1>猫日 <small>suis from ヨルシカ — TVアニメ「猫と竜」OPテーマ</small></h1>
+  <button id="btnVideoQk" class="vidQk" aria-label="動画同期" title="動画同期">🎥</button>
   <button id="btnTheme" class="themeBtn" aria-label="ダーク/ライト切替" title="ダーク/ライト切替">🌙</button>
   <button class="hdrToggle" id="btnHdr" aria-label="メニュー表示切替" title="コントロールを開閉">⚙</button>
   <div class="meta"><span><b>BPM 98</b></span><span>4/4</span><span id="keyLabel"></span></div>
@@ -220,6 +231,12 @@
 <div class="ytdock" id="ytdock" style="display:none">
   <button class="ytx" id="btnDockClose" aria-label="プレーヤーを閉じる" title="閉じる">✕</button>
   <div id="ytplayer"></div>
+  <div class="seekrow">
+    <button id="btnPlay" title="再生/一時停止">▶</button>
+    <input type="range" id="seekbar" min="0" max="0" step="0.5" value="0" aria-label="再生位置" />
+    <span class="tlab" id="tlab">–:–</span>
+    <button id="btnMini" title="動画を縮小/拡大">🗕</button>
+  </div>
   <div class="ytc">
     <button id="btnSync">♪ Sync scroll</button>
     <label>offset <input type="number" id="syncOff" step="0.5" value="0" title="Video time minus chart time — nudge until the chart matches what you hear" /> s</label>
@@ -567,7 +584,7 @@
   window.addEventListener("beforeprint", () => document.documentElement.classList.remove("dark"));
   window.addEventListener("afterprint", () => applyTheme(theme));
 
-  $("btnHdr").addEventListener("click", () => document.querySelector("header").classList.toggle("open"));
+  $("btnHdr").addEventListener("click", () => { document.querySelector("header").classList.toggle("open"); buildAnchors(); });
   $("btnBass").addEventListener("click", () => {
     bassMode = !bassMode;
     try { localStorage.setItem("nekobi-bass-mode", bassMode ? "1" : "0"); } catch (_) {}
@@ -620,6 +637,7 @@
 
   /* ===== YouTube video sync ===== */
   let yt = null, ytReady = false, syncOn = false, syncRaf = 0, anchors = [];
+  let anchorAge = 0;
   let syncOffset = 0;
   try { syncOffset = parseFloat(localStorage.getItem("nekobi-sync-offset")) || 0; } catch (_) {}
   $("syncOff").value = syncOffset;
@@ -667,23 +685,75 @@
     $("ytdock").style.display = "";
     document.body.classList.add("dockopen");
     $("btnVideo").classList.add("active");
+    $("btnVideoQk").classList.add("active");
+    startSeekUI();
     if (!yt) loadYT();
   }
   function closeDock() {
     $("ytdock").style.display = "none";
     document.body.classList.remove("dockopen");
     $("btnVideo").classList.remove("active");
+    $("btnVideoQk").classList.remove("active");
+    stopSeekUI();
     stopSync();
     if (ytReady && yt.getPlayerState && yt.getPlayerState() === 1) { try { yt.pauseVideo(); } catch (_) {} }
   }
   $("btnVideo").addEventListener("click", () => $("ytdock").style.display === "none" ? openDock() : closeDock());
   $("btnDockClose").addEventListener("click", closeDock);
+  /* ===== mini dock + seekbar ===== */
+  const fmtT = x => { x = Math.max(0, Math.round(x)); return Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"); };
+  let dockMini = window.innerWidth <= 640;
+  try { const dm = localStorage.getItem("pcs-dock-mini"); if (dm === "1") dockMini = true; else if (dm === "0") dockMini = false; } catch (_) {}
+  function applyMini() {
+    $("ytdock").classList.toggle("mini", dockMini);
+    document.body.classList.toggle("dockmini", dockMini);
+    $("btnMini").textContent = dockMini ? "\ud83c\udf9e" : "\ud83d\uddd5";
+    $("btnMini").title = dockMini ? "動画を大きく表示" : "動画を縮小（音はそのまま）";
+  }
+  applyMini();
+  $("btnMini").addEventListener("click", () => {
+    dockMini = !dockMini;
+    try { localStorage.setItem("pcs-dock-mini", dockMini ? "1" : "0"); } catch (_) {}
+    applyMini();
+  });
+  let seekDrag = false, seekTimer = 0;
+  function seekTick() {
+    if (!ytReady || !yt.getDuration) return;
+    const dur = yt.getDuration() || 0;
+    if (dur) $("seekbar").max = dur;
+    if (!seekDrag) {
+      const cur = yt.getCurrentTime() || 0;
+      $("seekbar").value = cur;
+      $("tlab").textContent = fmtT(cur) + " / " + fmtT(dur);
+    }
+    $("btnPlay").textContent = (yt.getPlayerState && yt.getPlayerState() === 1) ? "\u23f8" : "\u25b6";
+  }
+  function startSeekUI() { if (!seekTimer) seekTimer = setInterval(seekTick, 500); }
+  function stopSeekUI() { clearInterval(seekTimer); seekTimer = 0; }
+  $("btnPlay").addEventListener("click", () => {
+    if (!ytReady) return;
+    try { yt.getPlayerState() === 1 ? yt.pauseVideo() : yt.playVideo(); } catch (_) {}
+  });
+  $("seekbar").addEventListener("input", () => {
+    seekDrag = true;
+    $("tlab").textContent = fmtT(+$("seekbar").value) + " / " + fmtT(ytReady && yt.getDuration ? yt.getDuration() || 0 : 0);
+  });
+  $("seekbar").addEventListener("change", () => {
+    if (ytReady) { try { yt.seekTo(+$("seekbar").value, true); } catch (_) {} }
+    seekDrag = false;
+  });
+  $("btnVideoQk").addEventListener("click", () => $("btnVideo").click());
+
 
   function syncTick() {
     if (!syncOn) return;
     if (ytReady && yt.getPlayerState && yt.getPlayerState() === 1) {
+      if (++anchorAge >= 60) { anchorAge = 0; buildAnchors(); }
       const s = yt.getCurrentTime() - syncOffset;
-      const target = Math.max(0, songY(s) - window.innerHeight * 0.35);
+      const hdrH = document.querySelector("header").offsetHeight;
+      const dockH = $("ytdock").style.display === "none" ? 0 : $("ytdock").offsetHeight + 14;
+      const usable = Math.max(160, window.innerHeight - hdrH - dockH);
+      const target = Math.max(0, songY(s) - (hdrH + usable * 0.3));
       const cur = window.scrollY, d = target - cur;
       if (Math.abs(d) > 600) window.scrollTo(0, target);
       else if (Math.abs(d) > 0.5) window.scrollTo(0, cur + d * 0.12);
