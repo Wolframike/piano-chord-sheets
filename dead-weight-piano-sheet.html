@@ -204,7 +204,7 @@
     <button id="btnPrint">🖨 Print</button>
   </div>
   <div class="legend" style="flex-basis:100%">
-    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> — the lowest note (slash-aware) · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> U-FRETの人力チャート × Chordify実測拍で自動整合（照合スコア88%）。タイム・小節割りは実測、コード綴りはチャート準拠。ズレを感じたらoffsetで微調整を。
+    <span style="color:#e0a800;font-weight:700">◉</span> root sound = <b>yellow key with a ring</b> — the lowest note (slash-aware) · <span class="rh">◼</span> chord tones (C4–C6) · <span class="lhc">LH</span> = left-hand bass note (an octave or two below) · badge = beat within the measure · | = barline · cell width = beats the chord occupies · <b>注:</b> U-FRETの人力チャート × Chordify実測拍で自動整合（照合スコア87%）。タイム・小節割りは実測、コード綴りはチャート準拠。ズレを感じたらoffsetで微調整を。
   </div>
 </header>
 
@@ -234,68 +234,68 @@
 "use strict";
 (function () {
   const ORIG_BPM = 115;
-  const VIDEO_ID = "UHlScHFWAlA";
+  const VIDEO_ID = "lXsSf0LZsBA";
   const BASE = 0;              // UI ±0 = recording key = chart key + BASE semitones (capo)
   const NS = "dead-weight";
-  const SONG = { end: 186.54, sections: [
+  const SONG = { end: 187.0, sections: [
     { name: "イントロ", lines: [
-      { t:"0:04", ts:4.42, ch:["Bbm7"], pos:[[0, 0]], M:1 },
-      { t:"0:06", ts:6.52, ch:["Bbm7"], pos:[[0, 0]], M:1 },
-      { t:"0:08", ts:8.62, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"0:12", ts:12.84, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 }
+      { t:"0:04", ts:4.92, ch:["Bbm7"], pos:[[0, 0]], M:1 },
+      { t:"0:07", ts:7.02, ch:["Bbm7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"0:09", ts:9.14, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"0:13", ts:13.36, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 }
     ]},
     { name: "歌1", lines: [
-      { t:"0:17", ts:17.04, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"0:21", ts:21.26, ch:["Gb6", "F7"], pos:[[0, 0], [0, 4]], M:2 },
-      { t:"0:25", ts:25.46, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"0:29", ts:29.68, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"0:33", ts:33.9, ch:["Ebm7", "Ab7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"0:36", ts:36.0, ch:["DbM7", "GbM7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"0:38", ts:38.1, ch:["Cm7-5", "F7", "Bbm7", "Bb7"], pos:[[0, 0], [0, 4], [1, 0], [1, 4]], M:2 },
-      { t:"0:42", ts:42.32, ch:["Ebm7", "F7", "Bbm7/Ab", "Ebm7", "F7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0], [3, 0]], M:4 },
-      { t:"0:50", ts:50.72, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"0:52", ts:52.84, ch:["Bbm7", "Db7"], pos:[[0, 0], [0, 4]], M:1 }
+      { t:"0:17", ts:17.56, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"0:21", ts:21.76, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"0:25", ts:25.98, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"0:30", ts:30.2, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"0:34", ts:34.4, ch:["Ebm7", "Ab7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"0:36", ts:36.52, ch:["DbM7", "GbM7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"0:38", ts:38.62, ch:["F7", "Bbm7", "Bb7"], pos:[[0, 4], [1, 0], [1, 4]], M:2 },
+      { t:"0:42", ts:42.82, ch:["Ebm7", "F7", "Bbm7/Ab", "Ebm7", "F7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0], [3, 0]], M:4 },
+      { t:"0:51", ts:51.22, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"0:53", ts:53.34, ch:["Bbm7"], pos:[[0, 0]], M:1 }
     ]},
     { name: "歌2", lines: [
-      { t:"0:54", ts:54.94, ch:["F7", "Bbm7"], pos:[[0, 4], [1, 0]], M:2 },
-      { t:"0:59", ts:59.16, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"1:01", ts:61.26, ch:["Bbm7"], pos:[[0, 0]], M:1 },
-      { t:"1:03", ts:63.36, ch:["F7", "Bbm7", "Db7", "Ebm7", "F7"], pos:[[0, 4], [1, 0], [1, 4], [2, 0], [2, 4]], M:3 }
+      { t:"0:55", ts:55.44, ch:["F7", "Bbm7"], pos:[[0, 4], [1, 0]], M:2 },
+      { t:"0:59", ts:59.66, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"1:01", ts:61.78, ch:["Bbm7"], pos:[[0, 0]], M:1 },
+      { t:"1:03", ts:63.88, ch:["F7", "Bbm7", "Db7", "Ebm7", "F7"], pos:[[0, 4], [1, 0], [1, 4], [2, 0], [2, 4]], M:3 }
     ]},
     { name: "間奏", lines: [
-      { t:"1:09", ts:69.68, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"1:13", ts:73.9, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"1:18", ts:78.1, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"1:22", ts:82.32, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 }
+      { t:"1:10", ts:70.22, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"1:14", ts:74.4, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"1:18", ts:78.62, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"1:22", ts:82.82, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 }
     ]},
     { name: "歌3", lines: [
-      { t:"1:26", ts:86.52, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"1:30", ts:90.72, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"1:34", ts:94.94, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"1:39", ts:99.14, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
-      { t:"1:43", ts:103.36, ch:["Ab7"], pos:[[0, 4]], M:1 },
-      { t:"1:45", ts:105.48, ch:["DbM7", "GbM7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"1:47", ts:107.58, ch:["Cm7-5", "F7", "Bbm7", "Bb7"], pos:[[0, 0], [0, 5], [1, 0], [1, 4]], M:2 },
-      { t:"1:51", ts:111.78, ch:["Ebm7", "F7", "Bbm7/Ab", "Ebm7", "F7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0], [3, 0]], M:4 },
-      { t:"2:00", ts:120.22, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"2:02", ts:122.3, ch:["Bbm7", "Db7"], pos:[[0, 0], [0, 4]], M:1 }
+      { t:"1:27", ts:87.04, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"1:31", ts:91.24, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"1:35", ts:95.44, ch:["Bbm7", "Ab"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"1:39", ts:99.64, ch:["Gb6", "F7"], pos:[[0, 0], [1, 0]], M:2 },
+      { t:"1:43", ts:103.9, ch:["Ebm7", "Ab7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"1:45", ts:105.98, ch:["DbM7", "GbM7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"1:48", ts:108.1, ch:["F7", "Bbm7", "Bb7"], pos:[[0, 4], [1, 0], [1, 4]], M:2 },
+      { t:"1:52", ts:112.3, ch:["Ebm7", "F7", "Bbm7/Ab", "Ebm7", "F7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0], [3, 0]], M:4 },
+      { t:"2:00", ts:120.72, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"2:02", ts:122.82, ch:["Bbm7", "Db7"], pos:[[0, 0], [0, 4]], M:1 }
     ]},
     { name: "歌4", lines: [
-      { t:"2:04", ts:124.4, ch:["F7", "Bbm7"], pos:[[0, 4], [1, 0]], M:2 },
-      { t:"2:08", ts:128.6, ch:["GbM7", "F7"], pos:[[0, 3], [0, 5]], M:1 },
-      { t:"2:10", ts:130.72, ch:["Bbm7", "Db7"], pos:[[0, 0], [0, 4]], M:1 },
-      { t:"2:12", ts:132.84, ch:["F7", "Bbm7", "Db7", "Ebm7", "F7"], pos:[[0, 4], [1, 0], [1, 4], [2, 0], [2, 4]], M:3 },
-      { t:"2:19", ts:139.16, ch:["GbM7", "Ab", "Bbm7"], pos:[[0, 0], [0, 4], [1, 0]], M:2 },
-      { t:"2:23", ts:143.36, ch:["GbM7", "F7", "Bbm7"], pos:[[0, 0], [0, 4], [1, 0]], M:2 },
-      { t:"2:27", ts:147.58, ch:["GbM7", "Ab", "Bbm7", "Ebm7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0]], M:3 },
-      { t:"2:33", ts:153.88, ch:["Fm7", "GbM7"], pos:[[0, 0], [1, 0]], M:2 }
+      { t:"2:04", ts:124.94, ch:["F7", "Bbm7"], pos:[[0, 4], [1, 0]], M:2 },
+      { t:"2:09", ts:129.14, ch:["GbM7", "F7"], pos:[[0, 0], [0, 4]], M:1 },
+      { t:"2:11", ts:131.26, ch:["Bbm7"], pos:[[0, 0]], M:1 },
+      { t:"2:13", ts:133.36, ch:["F7", "Bbm7", "Ebm7", "F7"], pos:[[0, 4], [1, 0], [2, 0], [2, 4]], M:3 },
+      { t:"2:19", ts:139.68, ch:["GbM7", "Ab", "Bbm7"], pos:[[0, 0], [0, 4], [1, 0]], M:2 },
+      { t:"2:23", ts:143.86, ch:["GbM7", "F7", "Bbm7", "Eb"], pos:[[0, 0], [0, 4], [1, 0], [1, 4]], M:2 },
+      { t:"2:28", ts:148.08, ch:["GbM7", "Ab", "Bbm7", "Ebm7"], pos:[[0, 0], [0, 4], [1, 0], [2, 0]], M:3 },
+      { t:"2:34", ts:154.44, ch:["Fm7", "GbM7"], pos:[[0, 0], [1, 0]], M:2 }
     ]},
     { name: "アウトロ", lines: [
       { t:"2:38", ts:158.0, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 4], [2, 0], [2, 4]], M:3 },
-      { t:"2:43", ts:163.36, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"2:47", ts:167.58, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"2:51", ts:171.76, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
-      { t:"2:55", ts:175.98, ch:["Bbm7"], pos:[[0, 0]], M:3 }
+      { t:"2:43", ts:163.86, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"2:48", ts:168.08, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"2:52", ts:172.28, ch:["Bbm7", "Gb6", "F7"], pos:[[0, 0], [1, 0], [1, 4]], M:2 },
+      { t:"2:56", ts:176.48, ch:["Bbm7"], pos:[[0, 0]], M:3 }
     ]}
   ]};
 
@@ -692,7 +692,7 @@
     const all = new Set();
     let count = 0;
     allLines.forEach(r => r.ln.ch.forEach(s => { all.add(s); count++; }));
-    if (count !== 115) { console.error("SHEET SELFTEST count FAIL", count); fail++; }
+    if (count !== 113) { console.error("SHEET SELFTEST count FAIL", count); fail++; }
     all.forEach(s => { if (s !== "N.C.") try { parseChord(s); } catch (e) { console.error("SHEET SELFTEST FAIL", s); fail++; } });
     allLines.forEach(r => {
       const k = r.si + "-" + r.li, R = RHYTHM[k];
