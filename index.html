@@ -1,676 +1,456 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Piano Chord Sheets</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>曲一覧 — ピアノコード譜</title>
 <style>
-  :root {
-    --ink: #1c1c22; --muted: #6b6b76; --line: #e2e2e8; --accent: #5b4bd4;
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", Roboto, sans-serif;
+/* base.css — openai 規則の値の正本。RULES.md と完全に一致させる。
+   使い方: ページの <style> の先頭に、省略せず変えずに写す。部品の CSS はこの後ろに足す。 */
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff; --fill: #f3f3f3; --fill-strong: #e8e8e8; --raised: #ffffff; --selected: #ffffff;
+  --text: #000000; --text-2: #666666;
+  --border: #e0e0e0; --border-strong: #cccccc; --border-input: #8f8f8f;
+  --ink: #000000; --focus: #000000;
+  --cat1-tint: #eaf2fd; --cat1: #1f4e94;
+  --cat2-tint: #f2eefb; --cat2: #5a3e9e;
+  --cat3-tint: #e8f5ec; --cat3: #1d6b3b;
+  --warn-tint: #fff0e5; --warn: #8f3b00;
+  --error-tint: #fdecea; --error: #b42318;
+  --highlight: #f6d247; --highlight-hover: #e8c33a; --on-highlight: #000000; --highlight-tint: #fdf3c4;
+  --backdrop: rgba(0, 0, 0, .4);
+  --shadow-composer: 0 3px 6px rgba(0, 0, 0, .04), 0 4px 80px 8px rgba(0, 0, 0, .04);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, "Noto Sans CJK JP", "Noto Sans JP", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+  --r-xs: 4px; --r-sm: 6px; --r-md: 12px; --r-lg: 20px; --r-xl: 24px; --r-pill: 9999px;
+  --ease: cubic-bezier(.4, 0, .2, 1); --ease-out: cubic-bezier(0, .56, .46, 1);
+  --gutter: 32px; --measure: 720px; --wide: 1200px; --aside: clamp(440px, 50%, 880px); --nav: 240px; --rail: 80px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --fill: #1f1f1f; --fill-strong: #2b2b2b; --raised: #1f1f1f; --selected: #2b2b2b;
+    --text: #ffffff; --text-2: #a3a3a3;
+    --border: #333333; --border-strong: #4d4d4d; --border-input: #6b6b6b;
+    --ink: #ffffff; --focus: #ffffff;
+    --cat1-tint: #0f2541; --cat1: #a4cdfb;
+    --cat2-tint: #251d3d; --cat2: #c7b8f5;
+    --cat3-tint: #0f2c1b; --cat3: #95d5aa;
+    --warn-tint: #3a1f0c; --warn: #ffb27a;
+    --error-tint: #3b1310; --error: #ff9e94;
+    --highlight: #f6d247; --highlight-hover: #e8c33a; --on-highlight: #000000; --highlight-tint: #3a3212;
+    --backdrop: rgba(0, 0, 0, .7);
+    --shadow-composer: none;
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; background: #f6f6f8; color: var(--ink); font-family: var(--font); font-size: 15px; }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --fill: #1f1f1f; --fill-strong: #2b2b2b; --raised: #1f1f1f; --selected: #2b2b2b;
+  --text: #ffffff; --text-2: #a3a3a3;
+  --border: #333333; --border-strong: #4d4d4d; --border-input: #6b6b6b;
+  --ink: #ffffff; --focus: #ffffff;
+  --cat1-tint: #0f2541; --cat1: #a4cdfb;
+  --cat2-tint: #251d3d; --cat2: #c7b8f5;
+  --cat3-tint: #0f2c1b; --cat3: #95d5aa;
+  --warn-tint: #3a1f0c; --warn: #ffb27a;
+  --error-tint: #3b1310; --error: #ff9e94;
+  --highlight: #f6d247; --highlight-hover: #e8c33a; --on-highlight: #000000; --highlight-tint: #3a3212;
+  --backdrop: rgba(0, 0, 0, .7);
+  --shadow-composer: none;
+}
+@media (max-width: 767px) { :root { --gutter: 16px; } }
 
-  header { padding: 34px 18px 6px; text-align: center; }
-  header h1 { margin: 0; font-size: 26px; letter-spacing: .5px; }
-  header p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 16px/1.75 var(--font); letter-spacing: .02em; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure, blockquote { margin: 0; }
+ul, ol { padding-left: 1.25em; }
+li + li { margin-top: var(--s1); }
+button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+::placeholder { color: var(--text-2); opacity: 1; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-2); }
 
-  main { max-width: 1040px; margin: 0 auto; padding: 22px 16px 40px; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 18px;
-  }
-  a.card {
-    display: block; text-decoration: none; color: inherit;
-    background: #fff; border: 1px solid var(--line); border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(20,20,30,.05);
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-  }
-  a.card:hover, a.card:focus-visible {
-    transform: translateY(-2px);
-    border-color: var(--accent);
-    box-shadow: 0 8px 24px rgba(60,50,150,.14);
-    outline: none;
-  }
-  a.card:active { transform: translateY(0); }
-  .cover {
-    aspect-ratio: 16 / 9; width: 100%;
-    background: #e9e9f0;
-    overflow: hidden;
-  }
-  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .body { padding: 12px 14px 14px; }
-  .title { font-size: 17px; font-weight: 800; margin: 0; }
-  .artist { color: var(--muted); font-size: 12.5px; margin: 3px 0 8px; }
-  .badges { display: flex; flex-wrap: wrap; gap: 5px; }
-  .badge {
-    font-size: 10.5px; color: var(--muted);
-    background: #f1f1f6; border: 1px solid var(--line);
-    border-radius: 20px; padding: 2px 9px; white-space: nowrap;
-  }
-  .badge.hi { color: #fff; background: var(--accent); border-color: var(--accent); }
+/* 文字の段階（RULES.md「トークン」の文字） */
+.t-hero { font-size: 48px; line-height: 1.25; font-weight: 500; letter-spacing: 0; font-feature-settings: "palt"; text-wrap: balance; word-break: auto-phrase; }
+.t-h2 { font-size: 30px; line-height: 1.35; font-weight: 500; letter-spacing: 0; font-feature-settings: "palt"; text-wrap: balance; word-break: auto-phrase; }
+.t-h3 { font-size: 22px; line-height: 1.4; font-weight: 500; letter-spacing: 0; font-feature-settings: "palt"; text-wrap: balance; word-break: auto-phrase; }
+.t-title { font-size: 18px; line-height: 1.4; font-weight: 500; letter-spacing: 0; font-feature-settings: "palt"; }
+.t-lead { font-size: 18px; line-height: 1.7; font-weight: 400; letter-spacing: .02em; text-wrap: pretty; }
+.t-body { font-size: 16px; line-height: 1.75; font-weight: 400; letter-spacing: .02em; text-wrap: pretty; line-break: strict; }
+.t-brand { font-size: 16px; line-height: 1.4; font-weight: 500; letter-spacing: 0; }
+.t-ui { font-size: 14px; line-height: 1.4; font-weight: 500; letter-spacing: .01em; }
+.t-data { font-size: 14px; line-height: 1.5; font-weight: 400; letter-spacing: .01em; }
+.t-small { font-size: 13px; line-height: 1.6; font-weight: 400; letter-spacing: .01em; }
+.t-caption { font-size: 12px; line-height: 1.5; font-weight: 400; letter-spacing: .01em; }
+.t-mono { font-family: var(--font-mono); font-size: 12px; line-height: 1.6; letter-spacing: 0; }
+@media (max-width: 767px) { .t-hero { font-size: 32px; } .t-h2 { font-size: 24px; } .t-h3 { font-size: 20px; } }
 
-  footer { text-align: center; color: var(--muted); font-size: 11.5px; padding: 10px 16px 36px; line-height: 1.6; }
+/* アイコン。Material Symbols の公式 SVG を <symbol id="i-名前"> でページに入れ、<svg class="icon" aria-hidden="true"><use href="#i-名前"/></svg> で描く */
+.icon { width: 20px; height: 20px; flex: none; fill: currentColor; vertical-align: middle; }
 
-  .themeBtn {
-    position: fixed; top: 12px; right: 12px; z-index: 10;
-    appearance: none; width: 38px; height: 38px; padding: 0;
-    border: 1px solid var(--line); border-radius: 50%; background: #fff;
-    font-size: 16px; cursor: pointer; box-shadow: 0 1px 4px rgba(20,20,30,.08);
-  }
-  html.dark { color-scheme: dark; --ink: #e7e7ec; --muted: #9a9aa8; --line: #2b2b33; --accent: #8b7cf7; }
-  html.dark body, html.dark { background: #121216; }
-  html.dark .themeBtn, html.dark a.card { background: #1b1b21; }
-  html.dark .cover { background: #26262e; }
-  html.dark .badge { background: #26262e; }
-  html.dark .badge.hi { background: var(--accent); border-color: var(--accent); color: #fff; }
-  html.dark a.card:hover, html.dark a.card:focus-visible { box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+/* ボタン */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); height: 40px; padding: 0 20px; border: 1px solid transparent; border-radius: var(--r-pill); font-size: 14px; line-height: 1; font-weight: 500; letter-spacing: .01em; white-space: nowrap; text-decoration: none; transition: background-color .2s linear, border-color .2s linear, color .2s linear; }
+.btn .icon { width: 18px; height: 18px; }
+.btn-sm { height: 36px; padding: 0 16px; }
+.btn-primary { background: var(--highlight); color: var(--on-highlight); }
+.btn-primary:hover { background: var(--highlight-hover); }
+.btn-secondary { background: var(--fill); color: var(--text); }
+.btn-secondary:hover { background: var(--fill-strong); }
+.btn-danger { background: var(--fill); color: var(--error); }
+.btn-danger:hover { background: var(--fill-strong); }
+.btn-icon { width: 36px; height: 36px; padding: 0; background: transparent; color: var(--text); }
+.btn-icon:hover { background: var(--fill); }
+.btn-icon.btn-xs { width: 24px; height: 24px; color: var(--text-2); }
+.btn-icon.btn-xs .icon { width: 18px; height: 18px; }
+.btn-icon.btn-xs:hover { background: var(--fill-strong); }
+.btn:disabled, .btn[aria-disabled="true"] { background: var(--fill-strong); color: var(--text-2); cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
 
-  @media (max-width: 480px) {
-    header { padding-top: 24px; }
-    header h1 { font-size: 22px; }
-    .grid { grid-template-columns: 1fr; gap: 14px; }
-    .title { font-size: 18px; }
-  }
+/* チップ・切替・絞り込みの行 */
+.chip { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border: 1px solid var(--border-strong); border-radius: var(--r-lg); background: transparent; color: var(--text); font-size: 14px; line-height: 1.5; font-weight: 500; letter-spacing: .01em; text-align: left; word-break: auto-phrase; transition: background-color .2s linear; }
+.chip:hover { background: var(--fill); }
+.toggle { display: inline-flex; align-items: center; gap: var(--s1); height: 32px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: var(--r-pill); background: transparent; color: var(--text-2); font-size: 13px; line-height: 1; font-weight: 500; white-space: nowrap; transition: background-color .2s linear, border-color .2s linear, color .2s linear; }
+.toggle .icon { display: none; width: 16px; height: 16px; }
+.toggle[aria-pressed="true"] { background: var(--fill-strong); border-color: var(--fill-strong); color: var(--text); }
+.toggle[aria-pressed="true"] .icon { display: inline-block; }
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s4); }
+.toolbar .search { flex: 1 1 280px; }
+.filter { display: inline-flex; align-items: center; gap: var(--s2); }
+.filter > label { color: var(--text-2); font-size: 13px; line-height: 1.4; white-space: nowrap; }
+
+/* 入力とフォーム、入力と送信の面 */
+.field { width: 100%; height: 40px; padding: 0 16px; border: 1px solid var(--border-input); border-radius: var(--r-pill); background: var(--bg); color: var(--text); font-size: 16px; line-height: 1.5; transition: border-color .2s linear, box-shadow .2s linear; }
+.field:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 1px var(--text); }
+.field[aria-invalid="true"] { border-color: var(--error); }
+textarea.field { height: auto; min-height: 96px; padding: 10px 16px; border-radius: var(--r-md); resize: vertical; }
+.field-sm { height: 36px; padding-left: 14px; }
+.select { position: relative; display: inline-flex; align-items: center; }
+.select select { appearance: none; padding-right: 40px; background: var(--fill); cursor: pointer; }
+.select .icon { position: absolute; right: 12px; pointer-events: none; }
+.search { position: relative; display: flex; align-items: center; }
+.search .field { padding-left: 44px; }
+.search .icon { position: absolute; left: 16px; color: var(--text-2); pointer-events: none; }
+input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--ink); flex: none; }
+.form { display: grid; gap: var(--s5); }
+.form-row { display: grid; gap: var(--s2); }
+.form-label { font-size: 14px; line-height: 1.4; font-weight: 500; }
+.form-help { font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.check-row { display: flex; align-items: flex-start; gap: var(--s3); }
+.check-row .form-label { line-height: 1.75; }
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; }
+.composer { display: flex; align-items: flex-end; gap: var(--s2); min-height: 56px; padding: 8px 8px 8px 20px; border: 1px solid var(--border-input); border-radius: var(--r-xl); background: var(--raised); box-shadow: var(--shadow-composer); transition: border-color .2s linear, box-shadow .2s linear; }
+.composer:focus-within { border-color: var(--text); box-shadow: 0 0 0 1px var(--text), var(--shadow-composer); }
+.composer textarea { flex: 1; min-width: 0; max-height: 192px; padding: 8px 0; border: 0; outline: none; background: transparent; color: var(--text); font-size: 16px; line-height: 24px; resize: none; }
+.composer .btn-send { width: 36px; height: 36px; padding: 0; border: 0; border-radius: var(--r-pill); display: inline-flex; align-items: center; justify-content: center; background: var(--highlight); color: var(--on-highlight); transition: background-color .2s linear; }
+.composer .btn-send:hover { background: var(--highlight-hover); }
+.composer .btn-send:disabled { background: var(--fill-strong); color: var(--text-2); cursor: not-allowed; }
+
+/* 知らせ・空の状態・読み込み中 */
+.banner { display: flex; justify-content: center; align-items: flex-start; gap: var(--s2); padding: 8px 16px; background: var(--fill); color: var(--text); font-size: 13px; line-height: 1.6; text-align: center; }
+.banner .icon { color: var(--text-2); }
+.notice { display: flex; align-items: flex-start; gap: var(--s2); padding: 12px 16px; border-radius: var(--r-md); background: var(--fill); color: var(--text); font-size: 13px; line-height: 1.6; }
+.notice-warn { background: var(--warn-tint); color: var(--warn); }
+.notice-error { background: var(--error-tint); color: var(--error); }
+.notice-title { display: block; font-size: 14px; line-height: 1.5; font-weight: 500; }
+.notice ul { margin: 0; padding-left: 20px; }
+.notice li + li { margin-top: var(--s1); }
+.notice-toggle { display: inline-flex; align-items: center; gap: var(--s1); height: 32px; padding: 0 10px 0 12px; border: 1px solid var(--border-strong); border-radius: var(--r-pill); background: transparent; color: var(--warn); font-size: 13px; line-height: 1; font-weight: 500; white-space: nowrap; transition: background-color .2s linear, border-color .2s linear; }
+.notice-toggle:hover { background: var(--fill); }
+.notice-toggle.is-new { border-color: var(--warn-tint); background: var(--warn-tint); }
+.notice-toggle .icon { width: 16px; height: 16px; }
+.notice-toggle .icon:last-child { transition: transform .3s var(--ease); }
+.notice-toggle[aria-expanded="true"] .icon:last-child { transform: rotate(180deg); }
+.menu-toggle { display: inline-flex; align-items: center; gap: var(--s1); height: 32px; padding: 0 10px 0 12px; border: 1px solid var(--border-strong); border-radius: var(--r-pill); background: transparent; color: var(--text); font-size: 13px; line-height: 1; font-weight: 500; white-space: nowrap; cursor: pointer; transition: background-color .2s linear; }
+.menu-toggle:hover { background: var(--fill); }
+.menu-toggle .icon { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+.menu-toggle[aria-expanded="true"] .icon { transform: rotate(180deg); }
+.say { display: flex; align-items: flex-start; gap: var(--s1); font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.say-warn { color: var(--warn); }
+.say-error { color: var(--error); }
+.say .icon { width: 18px; height: 18px; margin-top: 2px; }
+.disclaimer { padding: 8px 16px; font-size: 12px; line-height: 1.5; color: var(--text-2); text-align: center; }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s2); padding: var(--s7) 0; text-align: center; }
+.empty-text { font-size: 14px; line-height: 1.6; color: var(--text-2); }
+.empty .chips, .empty .actions { justify-content: center; margin-top: var(--s4); }
+.loading { display: flex; justify-content: center; align-items: center; gap: var(--s2); padding: var(--s7) 0; color: var(--text-2); font-size: 13px; line-height: 1.6; }
+.dots { display: inline-flex; align-items: center; gap: var(--s1); }
+.dots i { width: 6px; height: 6px; border-radius: var(--r-pill); background: currentColor; animation: blink 1.2s infinite; }
+.dots i:nth-child(2) { animation-delay: .2s; }
+.dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .2; } 40% { opacity: 1; } }
+
+/* ラベル・一覧・表・カード・手順・折りたたみ・リンク */
+.tag { display: inline-block; padding: 0 6px; border-radius: var(--r-xs); background: var(--fill); color: var(--text); font-size: 12px; line-height: 20px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+.tag-cat1 { background: var(--cat1-tint); color: var(--cat1); }
+.tag-cat2 { background: var(--cat2-tint); color: var(--cat2); }
+.tag-cat3 { background: var(--cat3-tint); color: var(--cat3); }
+.tag-warn { background: var(--warn-tint); color: var(--warn); }
+.list { margin: 0; padding: 0; list-style: none; }
+.list > li + li { margin-top: 0; }
+.list-row { display: flex; align-items: center; gap: var(--s3); min-height: 56px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.list-main { flex: 1; min-width: 0; }
+.list-title { font-size: 14px; line-height: 1.5; font-weight: 500; }
+.list-meta { font-size: 13px; line-height: 1.6; color: var(--text-2); }
+.box { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); overflow: hidden; }
+.box-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); padding: 12px 16px; font-size: 13px; line-height: 1.6; font-weight: 500; }
+.box-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s3); padding: 10px 16px; border-top: 1px solid var(--border); font-size: 13px; line-height: 1.6; }
+.table-wrap { position: relative; width: 100%; overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5; letter-spacing: .01em; }
+.table th { height: 40px; padding: 0 12px; border-bottom: 1px solid var(--border); background: var(--bg); color: var(--text-2); font-size: 13px; font-weight: 500; text-align: left; white-space: nowrap; }
+.table td { padding: 14px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.table th:first-child, .table td:first-child { padding-left: 0; }
+.table th:last-child, .table td:last-child { padding-right: 0; }
+.table .col-num { text-align: right; font-variant-numeric: tabular-nums; }
+.table-dense td { padding-top: 8px; padding-bottom: 8px; }
+.table thead th { position: sticky; top: 0; z-index: 1; }
+.table th button { display: inline-flex; align-items: center; gap: var(--s1); padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.table th button .icon { width: 16px; height: 16px; }
+.table th[aria-sort] button { color: var(--text); }
+.c-cat1 { color: var(--cat1); } .c-cat2 { color: var(--cat2); } .c-cat3 { color: var(--cat3); } .c-warn { color: var(--warn); } .c-error { color: var(--error); }
+.card { padding: var(--s5); border-radius: var(--r-sm); background: var(--fill); }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s5); margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.steps > li { margin: 0; counter-increment: step; }
+.steps > li::before { content: counter(step); display: block; margin-bottom: var(--s2); color: var(--text-2); font-size: 14px; line-height: 1.4; font-weight: 500; font-variant-numeric: tabular-nums; }
+.steps > li > * + * { margin-top: var(--s2); }
+.card > * + * { margin-top: var(--s2); }
+details > summary { display: flex; align-items: center; gap: var(--s1); list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary .icon { transition: transform .3s var(--ease); }
+details[open] > summary .icon { transform: rotate(180deg); }
+.faq > details { border-top: 1px solid var(--border); }
+.faq > details:last-child { border-bottom: 1px solid var(--border); }
+.faq summary { justify-content: space-between; padding: 16px 0; font-size: 16px; line-height: 1.6; font-weight: 500; }
+.faq details > div { padding: 0 0 16px; color: var(--text-2); }
+a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; transition: color .2s linear; }
+a:hover { color: var(--text-2); }
+a.btn, .nav a, .side-nav a, a.brand { text-decoration: none; }
+a.btn-primary:hover { color: var(--on-highlight); }
+a.btn-secondary:hover { color: var(--text); }
+
+/* ナビゲーション・タブ・ダイアログ */
+.site-header { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); height: 64px; padding: 0 var(--gutter); }
+.nav { display: flex; align-items: center; gap: var(--s5); }
+.nav a { color: var(--text-2); font-size: 14px; line-height: 1.4; font-weight: 500; }
+.nav a:hover, .nav a[aria-current="page"] { color: var(--text); }
+.side-nav { display: flex; flex-direction: column; gap: 2px; }
+.side-nav a { display: flex; align-items: center; gap: var(--s2); height: 40px; padding: 0 12px; border-radius: var(--r-pill); color: var(--text-2); font-size: 14px; line-height: 1; font-weight: 500; }
+.side-nav a:hover { color: var(--text); }
+.side-nav a[aria-current="page"] { background: var(--fill); color: var(--text); }
+.tabs { display: flex; padding: 4px; border-radius: var(--r-pill); background: var(--fill); }
+.tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: var(--s1); height: 36px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: transparent; color: var(--text-2); font-size: 14px; line-height: 1; font-weight: 500; white-space: nowrap; transition: background-color .2s linear, color .2s linear; }
+.tab[aria-selected="true"] { background: var(--selected); color: var(--text); }
+dialog { width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: var(--s5); border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); color: var(--text); }
+dialog::backdrop { background: var(--backdrop); }
+.dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s2); margin-top: var(--s5); }
+
+/* アプリの外枠の部品（利用者の部品、縦のメニュー、面のタブ、ドラッグ&ドロップ、メニュー） */
+.header-actions { display: flex; align-items: center; gap: var(--s2); }
+.avatar { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--r-pill); background: var(--fill-strong); color: var(--text); font-size: 14px; line-height: 1; font-weight: 500; }
+.avatar-button { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: var(--r-pill); background: transparent; }
+.avatar-button:hover { background: var(--fill); }
+.rail { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s3) 0; border-right: 1px solid var(--border); }
+.rail-item { display: flex; flex-direction: column; align-items: center; gap: var(--s1); width: 64px; padding: var(--s1) 0; border: 0; background: none; color: var(--text-2); font-size: 12px; line-height: 1.4; font-weight: 500; text-align: center; text-decoration: none; cursor: pointer; transition: color .2s linear; }
+.rail-item:hover { color: var(--text); }
+.rail-mark { display: flex; align-items: center; justify-content: center; width: 56px; height: 32px; border-radius: var(--r-pill); transition: background-color .2s linear; }
+.rail-item:hover .rail-mark { background: var(--fill); }
+.rail-item .icon { width: 24px; height: 24px; }
+.rail-item.is-open { color: var(--text); }
+.rail-item.is-open .rail-mark { background: var(--highlight); color: var(--on-highlight); }
+.panel-tabs { display: flex; align-items: flex-end; gap: var(--s2); min-height: 48px; padding: 0 var(--s4); border-bottom: 1px solid var(--border); }
+.panel-tab-group { display: inline-flex; align-items: center; gap: var(--s1); height: 40px; border-bottom: 2px solid transparent; }
+.panel-tab-group:has([aria-selected="true"]) { border-bottom-color: var(--ink); }
+.panel-tab { display: inline-flex; align-items: center; gap: var(--s2); height: 36px; padding: 0 var(--s1); border: 0; border-radius: var(--r-sm); background: none; color: var(--text-2); font-size: 14px; line-height: 1; font-weight: 500; white-space: nowrap; cursor: grab; }
+.panel-tab[aria-selected="true"] { color: var(--text); }
+.panel-tab:hover { background: var(--fill); }
+.is-dragging { opacity: .4; }
+.drop-zone { position: absolute; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s2); padding: var(--s5); border: 2px dashed var(--text-2); border-radius: var(--r-md); background: var(--highlight-tint); color: var(--text); font-size: 14px; line-height: 1.5; font-weight: 500; text-align: center; pointer-events: none; }
+.drop-zone .icon { width: 24px; height: 24px; }
+.drop-zone.is-over { border-style: solid; border-color: var(--text); }
+.has-menu { position: relative; }
+.menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 10; min-width: 240px; padding: var(--s1); border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); color: var(--text); }
+.menu-label { padding: var(--s2) var(--s3) var(--s1); color: var(--text-2); font-size: 12px; line-height: 1.5; }
+.menu-item { display: flex; align-items: center; gap: var(--s2); width: 100%; min-height: 40px; padding: 0 var(--s3); border: 0; border-radius: var(--r-sm); background: none; color: var(--text); font-size: 14px; line-height: 1.4; font-weight: 500; text-align: left; text-decoration: none; cursor: pointer; }
+.menu-item:hover { background: var(--fill); }
+.menu-item[aria-disabled="true"] { color: var(--text-2); background: none; cursor: not-allowed; }
+.menu-item .menu-end { margin-left: auto; }
+.menu-text { display: flex; flex-direction: column; min-width: 0; padding: 6px 0; }
+.menu-sub { color: var(--text-2); font-family: var(--font-mono); font-size: 12px; line-height: 1.5; font-weight: 400; letter-spacing: 0; overflow-wrap: anywhere; }
+.menu-sub:empty { display: none; }
+.menu-sep { height: 1px; margin: var(--s1) 0; background: var(--border); }
+/* 格子と幅 */
+.container { width: 100%; max-width: calc(var(--wide) + 2 * var(--gutter)); margin: 0 auto; padding: 0 var(--gutter); }
+.measure { width: 100%; max-width: var(--measure); margin-left: auto; margin-right: auto; }
+.section { padding: var(--s9) 0; }
+.section-head { margin-bottom: var(--s5); }
+.stack > * + * { margin-top: var(--s4); }
+.prose > * + * { margin-top: var(--s5); }
+.prose > h2, .prose > h3 { margin-top: var(--s7); }
+.prose > h2 + *, .prose > h3 + * { margin-top: var(--s4); }
+.pager { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); margin-top: var(--s7); }
+.pager > :last-child { text-align: right; }
+.pager-label { display: block; margin-bottom: var(--s1); color: var(--text-2); font-size: 13px; line-height: 1.6; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s5); }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
+.site-footer { border-top: 1px solid var(--border); padding: var(--s7) 0; }
+.site-footer .disclaimer { padding: 0; text-align: left; }
+.app { display: flex; flex-direction: column; height: 100dvh; }
+.app-frame { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
+.app-body { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+.app[data-layout="split"] .app-body { grid-template-columns: minmax(0, 1fr) var(--aside); }
+.app[data-layout="full"] .side-panel { display: none; }
+.pane { position: relative; min-width: 0; min-height: 0; overflow-y: auto; }
+.side-panel { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+.side-panel > .pane { flex: 1; }
+.split-handle { display: none; position: absolute; top: 0; bottom: 0; right: calc(var(--aside) - 6px); z-index: 3; width: 12px; align-items: center; justify-content: center; cursor: col-resize; touch-action: none; }
+.app[data-layout="split"] .split-handle { display: flex; }
+.split-handle::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; transform: translateX(-50%); }
+.split-handle:hover::before, .split-handle:focus-visible::before, .is-resizing .split-handle::before { background: var(--border-input); }
+.split-handle:focus-visible { outline: none; }
+.split-grip { position: relative; display: flex; align-items: center; justify-content: center; width: 16px; height: 40px; border: 1px solid var(--border-strong); border-radius: var(--r-pill); background: var(--bg); color: var(--text-2); }
+.split-handle:focus-visible .split-grip { border: 2px solid var(--focus); }
+.split-grip .icon { width: 16px; height: 16px; }
+.is-resizing { cursor: col-resize; user-select: none; }
+.with-nav { display: grid; grid-template-columns: var(--nav) minmax(0, 1fr); gap: var(--s7); }
+@media (max-width: 1023px) {
+  .app[data-layout] .app-body { grid-template-columns: minmax(0, 1fr); }
+  .app-body > :not(.is-current) { display: none !important; }
+  .app[data-layout="full"] .side-panel.is-current { display: flex; }
+  .side-panel { border-left: 0; }
+  .with-nav { grid-template-columns: minmax(0, 1fr); gap: var(--s5); }
+  .side-nav { flex-direction: row; flex-wrap: wrap; gap: var(--s2); }
+}
+@media (max-width: 767px) {
+  .app-frame { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .rail { grid-row: 2; flex-direction: row; justify-content: space-around; padding: var(--s1) 0; border-right: 0; border-top: 1px solid var(--border); }
+  .site-header { height: 56px; }
+  .section { padding: var(--s8) 0; }
+  .grid-2, .grid-3, .pager { grid-template-columns: minmax(0, 1fr); }
+  .pager > :last-child { text-align: left; }
+  .table-wrap .table th, .table-wrap .table td { white-space: nowrap; }
+  .table-wrap .table th:first-child, .table-wrap .table td:first-child { width: 160px; min-width: 160px; white-space: normal; }
+}
+
+/* 動き */
+@keyframes appear { from { opacity: 0; transform: translateY(4px); } }
+.appear { animation: appear .3s var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+/* ---- portal (values: var(--…) only) ---- */
+.list-page { padding-top: var(--s6); }
+.list-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s4); }
+.list-lead { margin-top: var(--s2); max-width: var(--measure); }
+.tool-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s4); margin-top: var(--s5); }
+.tool-card .tool-text { flex: 1 1 280px; min-width: 0; }
+.tool-card .tool-text > * + * { margin-top: var(--s1); }
+.tool-link { display: inline-flex; align-items: center; gap: var(--s1); }
+.list-tools { margin-top: var(--s5); }
+.list-page .table-wrap { margin-top: var(--s4); }
+.list-page .empty[hidden] { display: none; }
 </style>
 </head>
 <body>
-
-<button id="btnTheme" class="themeBtn" aria-label="ダーク/ライト切替" title="ダーク/ライト切替">🌙</button>
+<svg hidden><symbol id="i-search" viewBox="0 -960 960 960"><path d="M784-120 532-372 q-30 24-69 38 t-83 14 q-109 0-184.5-75.5 T120-580 q0-109 75.5-184.5 T380-840 q109 0 184.5 75.5 T640-580 q0 44-14 83 t-38 69 l252 252-56 56 Z M380-400 q75 0 127.5-52.5 T560-580 q0-75-52.5-127.5 T380-760 q-75 0-127.5 52.5 T200-580 q0 75 52.5 127.5 T380-400 Z"/></symbol><symbol id="i-arrow_forward" viewBox="0 -960 960 960"><path d="M647-440 H160 v-80 h487 L423-744 l57-56 320 320-320 320-57-56 224-224 Z"/></symbol></svg>
+<header class="site-header container">
+  <a class="brand t-brand" href="index.html">ピアノコード譜</a>
+  <nav class="nav" aria-label="サイト内"><a href="index.html" aria-current="page">曲一覧</a><a href="midi-piano.html">MIDI ピアノ</a></nav>
+</header>
+<main class="container list-page">
+  <div class="list-head"><h1 class="t-h2">曲一覧</h1><span class="t-small muted num" id="count">49曲</span></div>
+  <p class="t-body muted list-lead">コード進行と拍を鍵盤図で示した、ピアノ用のコード譜です。動画と同期して自動でスクロールし、移調やベース音だけの表示もできます。</p>
+  <section class="card tool-card" aria-labelledby="toolTitle">
+    <div class="tool-text">
+      <h2 class="t-title" id="toolTitle">MIDI ピアノ</h2>
+      <p class="t-body muted">MIDI ファイルを、鍵盤に落ちてくる音符で見ながら再生します。速さを変えての練習や、動画（MP4）への書き出しもできます。</p>
+    </div>
+    <a class="t-ui tool-link" href="midi-piano.html">MIDI ピアノを開く<svg class="icon" aria-hidden="true"><use href="#i-arrow_forward"/></svg></a>
+  </section>
+  <div class="toolbar list-tools">
+    <div class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><label class="sr-only" for="q">曲名・アーティストで検索</label><input class="field" id="q" type="search" placeholder="曲名・アーティスト" autocomplete="off"></div>
+  </div>
+  <div class="table-wrap">
+    <table class="table table-dense">
+      <thead><tr><th scope="col">曲名</th><th scope="col">アーティスト</th><th scope="col">キー</th><th scope="col" class="col-num">BPM</th><th scope="col">譜面</th><th scope="col">注記</th></tr></thead>
+      <tbody id="rows">
+        <tr data-q="遺書 キタニタツヤ — tvアニメ『これ描いて死ね』op"><td><a href="final-draft-piano-sheet.html">遺書</a></td><td>キタニタツヤ — TVアニメ『これ描いて死ね』OP</td><td class="num">D♭（カポ譜C）</td><td class="col-num">142</td><td>music-chord＋chord-rinne</td><td class="muted">簡易・詳細・補正の3版</td></tr>
+        <tr data-q="猫日 suis from ヨルシカ — tvアニメ「猫と竜」opテーマ"><td><a href="nekobi-piano-sheet.html">猫日</a></td><td>suis from ヨルシカ — TVアニメ「猫と竜」OPテーマ</td><td class="num">C</td><td class="col-num">98</td><td>music-chord＋chord-rinne</td><td class="muted">簡易・詳細・補正の3版</td></tr>
+        <tr data-q="リグレットベイビーズ laura day romance"><td><a href="regret-babies-piano-sheet.html">リグレットベイビーズ</a></td><td>Laura day romance</td><td class="num">E♭ / Cm（原曲）</td><td class="col-num">—</td><td>U-FRET</td><td class="muted">動画同期なし・簡単コード ver.・掲載譜 −3</td></tr>
+        <tr data-q="軽忽な救済を待つ醜さには一片の夾竹桃を こんにちは谷田さん feat. 鏡音リン"><td><a href="kyochikuto-piano-sheet.html">軽忽な救済を待つ醜さには一片の夾竹桃を</a></td><td>こんにちは谷田さん feat. 鏡音リン</td><td class="num">Am</td><td class="col-num">≈200</td><td>ChordWiki</td><td class="muted">拍記譜（ChordWiki）</td></tr>
+        <tr data-q="化け猫 キタニタツヤ"><td><a href="bakeneko-piano-sheet.html">化け猫</a></td><td>キタニタツヤ</td><td class="num">D♭（カポ1譜）</td><td class="col-num">120</td><td>music-chord</td><td class="muted">カポ 1（±0＝実音D♭）</td></tr>
+        <tr data-q="素敵なしゅうまつを！ キタニタツヤ"><td><a href="have-a-nice-end-piano-sheet.html">素敵なしゅうまつを！</a></td><td>キタニタツヤ</td><td class="num">C / Am（原曲キー）</td><td class="col-num">138</td><td>music-chord</td><td class="muted"></td></tr>
+        <tr data-q="愛のけだもの 神はサイコロを振らない × キタニタツヤ"><td><a href="ai-no-kedamono-piano-sheet.html">愛のけだもの</a></td><td>神はサイコロを振らない × キタニタツヤ</td><td class="num">B→D→C（転調）</td><td class="col-num">122</td><td>music-chord</td><td class="muted">カポ 2（±0＝実音）・B→D→C 転調</td></tr>
+        <tr data-q="悪魔の踊り方 キタニタツヤ"><td><a href="devils-manner-piano-sheet.html">悪魔の踊り方</a></td><td>キタニタツヤ</td><td class="num">E♭m</td><td class="col-num">107</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="それでも僕らの呼吸は止まない キタニタツヤ"><td><a href="cant-stop-breathing-piano-sheet.html">それでも僕らの呼吸は止まない</a></td><td>キタニタツヤ</td><td class="num">D</td><td class="col-num">158</td><td>chord-rinne</td><td class="muted">照合57%・要オフセット確認</td></tr>
+        <tr data-q="人間みたいね キタニタツヤ"><td><a href="humanlike-piano-sheet.html">人間みたいね</a></td><td>キタニタツヤ</td><td class="num">B</td><td class="col-num">120</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="聖者の行進 キタニタツヤ"><td><a href="when-the-weak-go-marching-in-piano-sheet.html">聖者の行進</a></td><td>キタニタツヤ</td><td class="num">Cm</td><td class="col-num">158</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="キュートアグレッション キタニタツヤ"><td><a href="cute-aggression-piano-sheet.html">キュートアグレッション</a></td><td>キタニタツヤ</td><td class="num">Fm</td><td class="col-num">100</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="ちはる キタニタツヤ feat. n-buna from ヨルシカ"><td><a href="chiharu-piano-sheet.html">ちはる</a></td><td>キタニタツヤ feat. n-buna from ヨルシカ</td><td class="num">B♭</td><td class="col-num">86</td><td>chord-rinne</td><td class="muted">照合66%・要オフセット確認</td></tr>
+        <tr data-q="スカー キタニタツヤ"><td><a href="scar-piano-sheet.html">スカー</a></td><td>キタニタツヤ</td><td class="num">B♭m</td><td class="col-num">188</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="青のすみか キタニタツヤ"><td><a href="where-our-blue-is-piano-sheet.html">青のすみか</a></td><td>キタニタツヤ</td><td class="num">D♭</td><td class="col-num">150</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="私が明日死ぬなら キタニタツヤ"><td><a href="promise-me-piano-sheet.html">私が明日死ぬなら</a></td><td>キタニタツヤ</td><td class="num">D</td><td class="col-num">188</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="moonthief キタニタツヤ"><td><a href="moonthief-piano-sheet.html">Moonthief</a></td><td>キタニタツヤ</td><td class="num">F♯m</td><td class="col-num">150</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="月光 キタニタツヤ × はるまきごはん"><td><a href="moonlight-piano-sheet.html">月光</a></td><td>キタニタツヤ × はるまきごはん</td><td class="num">G</td><td class="col-num">107</td><td>chord-rinne</td><td class="muted">照合50%・要オフセット確認</td></tr>
+        <tr data-q="カルチャー キタニタツヤ"><td><a href="culture-piano-sheet.html">カルチャー</a></td><td>キタニタツヤ</td><td class="num">E♭</td><td class="col-num">167</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="あなたのことをおしえて キタニタツヤ"><td><a href="tell-me-about-you-piano-sheet.html">あなたのことをおしえて</a></td><td>キタニタツヤ</td><td class="num">G</td><td class="col-num">214</td><td>chord-rinne</td><td class="muted">照合65%・要オフセット確認</td></tr>
+        <tr data-q="火種 キタニタツヤ"><td><a href="hidane-piano-sheet.html">火種</a></td><td>キタニタツヤ</td><td class="num">Bm</td><td class="col-num">125</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="れびてーしょん キタニタツヤ"><td><a href="levitation-piano-sheet.html">れびてーしょん</a></td><td>キタニタツヤ</td><td class="num">B</td><td class="col-num">130</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="stoned child キタニタツヤ"><td><a href="stoned-child-piano-sheet.html">Stoned Child</a></td><td>キタニタツヤ</td><td class="num">E♭</td><td class="col-num">97</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="花の香 キタニタツヤ"><td><a href="a-flower-in-the-mist-piano-sheet.html">花の香</a></td><td>キタニタツヤ</td><td class="num">E♭m</td><td class="col-num">67</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="白無垢 キタニタツヤ"><td><a href="slush-piano-sheet.html">白無垢</a></td><td>キタニタツヤ</td><td class="num">C</td><td class="col-num">81</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="パノプティコン キタニタツヤ"><td><a href="panopticon-piano-sheet.html">パノプティコン</a></td><td>キタニタツヤ</td><td class="num">F♯</td><td class="col-num">107</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="悪夢 キタニタツヤ"><td><a href="bad-dream-piano-sheet.html">悪夢</a></td><td>キタニタツヤ</td><td class="num">A</td><td class="col-num">91</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="逃走劇 キタニタツヤ"><td><a href="accomplices-piano-sheet.html">逃走劇</a></td><td>キタニタツヤ</td><td class="num">B♭m</td><td class="col-num">115</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="rapport キタニタツヤ"><td><a href="rapport-piano-sheet.html">Rapport</a></td><td>キタニタツヤ</td><td class="num">G♯m</td><td class="col-num">125</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="大人になっても キタニタツヤ"><td><a href="even-as-an-adult-piano-sheet.html">大人になっても</a></td><td>キタニタツヤ</td><td class="num">G♯m</td><td class="col-num">115</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="冷たい渦 キタニタツヤ"><td><a href="inner-whirlpool-piano-sheet.html">冷たい渦</a></td><td>キタニタツヤ</td><td class="num">Em</td><td class="col-num">130</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="振り子の上で キタニタツヤ"><td><a href="pendulum-piano-sheet.html">振り子の上で</a></td><td>キタニタツヤ</td><td class="num">B♭</td><td class="col-num">81</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="pink キタニタツヤ"><td><a href="pink-piano-sheet.html">PINK</a></td><td>キタニタツヤ</td><td class="num">G♯m</td><td class="col-num">103</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="タナトフォビア キタニタツヤ"><td><a href="thanatophobia-piano-sheet.html">タナトフォビア</a></td><td>キタニタツヤ</td><td class="num">Dm</td><td class="col-num">111</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="夜警 キタニタツヤ"><td><a href="nightwatch-piano-sheet.html">夜警</a></td><td>キタニタツヤ</td><td class="num">G♯m</td><td class="col-num">158</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="永遠 キタニタツヤ"><td><a href="i-dont-want-eternity-eternally-piano-sheet.html">永遠</a></td><td>キタニタツヤ</td><td class="num">Am</td><td class="col-num">83</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="やんぐわーるど キタニタツヤ prod. nee"><td><a href="young-world-piano-sheet.html">やんぐわーるど</a></td><td>キタニタツヤ prod. NEE</td><td class="num">G♯m</td><td class="col-num">100</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="旅にでも出よっか キタニタツヤ"><td><a href="somewhere-far-away-piano-sheet.html">旅にでも出よっか</a></td><td>キタニタツヤ</td><td class="num">E♭</td><td class="col-num">100</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="芥の部屋は錆色に沈む こんにちは谷田さん feat. 鏡音リン"><td><a href="the-sunset-rust-corrodes-the-room-piano-sheet.html">芥の部屋は錆色に沈む</a></td><td>こんにちは谷田さん feat. 鏡音リン</td><td class="num">B♭m</td><td class="col-num">158</td><td>U-FRET</td><td class="muted">照合64%・要オフセット確認</td></tr>
+        <tr data-q="きっとこの命に意味は無かった こんにちは谷田さん feat. 鏡音リン"><td><a href="there-must-be-no-meaning-in-my-life-piano-sheet.html">きっとこの命に意味は無かった</a></td><td>こんにちは谷田さん feat. 鏡音リン</td><td class="num">G♯m</td><td class="col-num">100</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="夢遊病者は此岸にて キタニタツヤ"><td><a href="a-sleepwalker-gazing-on-nirvana-piano-sheet.html">夢遊病者は此岸にて</a></td><td>キタニタツヤ</td><td class="num">A</td><td class="col-num">107</td><td>ChordWiki</td><td class="muted"></td></tr>
+        <tr data-q="ハイドアンドシーク キタニタツヤ"><td><a href="hide-and-seek-piano-sheet.html">ハイドアンドシーク</a></td><td>キタニタツヤ</td><td class="num">B</td><td class="col-num">94</td><td>ChordWiki</td><td class="muted"></td></tr>
+        <tr data-q="落下ウサギと寡黙な傍観者の手記 こんにちは谷田さん feat. 初音ミク"><td><a href="rakka-usagi-piano-sheet.html">落下ウサギと寡黙な傍観者の手記</a></td><td>こんにちは谷田さん feat. 初音ミク</td><td class="num">Em</td><td class="col-num">167</td><td>ChordWiki</td><td class="muted"></td></tr>
+        <tr data-q="初夏、殺意は街を浸す病のように こんにちは谷田さん feat. 鏡音リン"><td><a href="early-summer-murderous-urge-piano-sheet.html">初夏、殺意は街を浸す病のように</a></td><td>こんにちは谷田さん feat. 鏡音リン</td><td class="num">F♯m</td><td class="col-num">115</td><td>ChordWiki</td><td class="muted"></td></tr>
+        <tr data-q="少女a 椎名もた feat. 鏡音リン"><td><a href="shoujo-a-piano-sheet.html">少女A</a></td><td>椎名もた feat. 鏡音リン</td><td class="num">D♭→C（半音下げ転調）</td><td class="col-num">130</td><td>chord-rinne</td><td class="muted"></td></tr>
+        <tr data-q="デッドウェイト キタニタツヤ"><td><a href="dead-weight-piano-sheet.html">デッドウェイト</a></td><td>キタニタツヤ</td><td class="num">B♭m</td><td class="col-num">115</td><td>U-FRET</td><td class="muted"></td></tr>
+        <tr data-q="asphyxia cö shu nie"><td><a href="asphyxia-piano-sheet.html">asphyxia</a></td><td>Cö shu Nie</td><td class="num">Dm</td><td class="col-num">155</td><td>ChordWiki</td><td class="muted">変拍子 3/4⇄5/8</td></tr>
+        <tr data-q="頂き スーパー登山部"><td><a href="itadaki-piano-sheet.html">頂き</a></td><td>スーパー登山部</td><td class="num">C</td><td class="col-num">120</td><td>ChordWiki</td><td class="muted"></td></tr>
+        <tr data-q="エメラルド キタニタツヤ"><td><a href="emerald-piano-sheet.html">エメラルド</a></td><td>キタニタツヤ</td><td class="num">E♭</td><td class="col-num">146</td><td>ChordWiki＋rinne</td><td class="muted"></td></tr>
+        <!-- To add a sheet: copy a row above (title link, artist, key, BPM, source, notes; data-q = lowercase title + artist) -->
+      </tbody>
+    </table>
+  </div>
+  <div class="empty" id="empty" hidden>
+    <h2 class="t-title">見つかりませんでした</h2>
+    <p class="empty-text">別の曲名やアーティスト名で探してください。</p>
+  </div>
+</main>
+<footer class="site-footer"><div class="container"><p class="disclaimer">コードとタイミングのみを掲載しています（歌詞は載せていません）。私的使用のためのコード譜です。</p></div></footer>
 <script>
+"use strict";
 (function () {
-  var THEME_KEY = "pcs-theme", btn = document.getElementById("btnTheme"), theme;
-  function apply(t) {
-    document.documentElement.classList.toggle("dark", t === "dark");
-    btn.textContent = t === "dark" ? "☀︎" : "🌙";
-  }
-  try { theme = localStorage.getItem(THEME_KEY); } catch (_) {}
-  if (!theme) theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  apply(theme);
-  btn.addEventListener("click", function () {
-    theme = theme === "dark" ? "light" : "dark";
-    try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
-    apply(theme);
+  try { const t = localStorage.getItem("pcs-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (_) {}
+  const q = document.getElementById("q"), rows = [...document.querySelectorAll("#rows tr")], total = rows.length;
+  const norm = s => s.normalize("NFKC").toLowerCase();
+  q.addEventListener("input", () => {
+    const v = norm(q.value.trim()); let n = 0;
+    rows.forEach(r => { const hit = !v || norm(r.dataset.q).includes(v); r.hidden = !hit; n += hit; });
+    document.getElementById("count").textContent = v ? `${total}曲中 ${n}曲` : `${total}曲`;
+    document.getElementById("empty").hidden = n > 0;
+    document.querySelector(".table-wrap").hidden = n === 0;
   });
 })();
 </script>
-
-<header>
-  <h1>🎹 Piano Chord Sheets</h1>
-  <p>コード進行と拍グリッドをピアノ鍵盤図で — タップで各シートへ</p>
-</header>
-
-<main>
-  <div class="grid">
-
-    <a class="card" href="final-draft-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/bcEDagHXQEU/hqdefault.jpg" alt="遺書 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">遺書</h2>
-        <p class="artist">キタニタツヤ — TVアニメ『これ描いて死ね』OP</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM 142</span>
-          <span class="badge">Key D♭（カポ譜C）</span>
-          <span class="badge">Simple / Detailed / Hybrid</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="nekobi-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/nvcVUq1g1z8/hqdefault.jpg" alt="猫日 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">猫日</h2>
-        <p class="artist">suis from ヨルシカ — TVアニメ「猫と竜」OPテーマ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM 98</span>
-          <span class="badge">Key C</span>
-          <span class="badge">Simple / Detailed / Hybrid</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="regret-babies-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/9Jv4zj-1PfY/hqdefault.jpg" alt="リグレットベイビーズ cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">リグレットベイビーズ</h2>
-        <p class="artist">Laura day romance</p>
-        <div class="badges">
-          <span class="badge">簡単コード ver.</span>
-          <span class="badge">Key E♭ / Cm（原曲）</span>
-          <span class="badge">掲載譜 −3</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="kyochikuto-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/TTauGwXhxdc/hqdefault.jpg" alt="軽忽な救済を待つ醜さには一片の夾竹桃を cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title" style="font-size:14.5px">軽忽な救済を待つ醜さには一片の夾竹桃を</h2>
-        <p class="artist">こんにちは谷田さん feat. 鏡音リン</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM ≈200</span>
-          <span class="badge">Key Am</span>
-          <span class="badge">拍記譜（ChordWiki）</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="bakeneko-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/lMZUE2SvF_c/hqdefault.jpg" alt="化け猫 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">化け猫</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM 120</span>
-          <span class="badge">Capo 1（±0＝実音D♭）</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="have-a-nice-end-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/By7IfhoAyqA/hqdefault.jpg" alt="素敵なしゅうまつを！ cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">素敵なしゅうまつを！</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM 138</span>
-          <span class="badge">Key C / Am（原曲キー）</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="ai-no-kedamono-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/fQybVLWmj9M/hqdefault.jpg" alt="愛のけだもの cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">愛のけだもの</h2>
-        <p class="artist">神はサイコロを振らない × キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期</span>
-          <span class="badge">BPM 122</span>
-          <span class="badge">Capo 2（±0＝実音）</span>
-          <span class="badge">B→D→C 転調</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="devils-manner-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/v7_Jo4SfICk/hqdefault.jpg" alt="悪魔の踊り方 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">悪魔の踊り方</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 107</span> <span class="badge">Key E♭m</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="cant-stop-breathing-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/V9ciP6UNNwU/hqdefault.jpg" alt="それでも僕らの呼吸は止まない cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">それでも僕らの呼吸は止まない</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 158</span> <span class="badge">Key D</span> <span class="badge">譜: chord-rinne</span> <span class="badge">照合57%・要オフセット確認</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="humanlike-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/cBxQ6bmy_9I/hqdefault.jpg" alt="人間みたいね cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">人間みたいね</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 120</span> <span class="badge">Key B</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="when-the-weak-go-marching-in-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/e9RVh2bXA8M/hqdefault.jpg" alt="聖者の行進 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">聖者の行進</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 158</span> <span class="badge">Key Cm</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="cute-aggression-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/jfcqoMZdqkk/hqdefault.jpg" alt="キュートアグレッション cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">キュートアグレッション</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 100</span> <span class="badge">Key Fm</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="chiharu-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/XTTDTt41FBE/hqdefault.jpg" alt="ちはる cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">ちはる</h2>
-        <p class="artist">キタニタツヤ feat. n-buna from ヨルシカ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 86</span> <span class="badge">Key B♭</span> <span class="badge">譜: chord-rinne</span> <span class="badge">照合66%・要オフセット確認</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="scar-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/pb_fwnVamdI/hqdefault.jpg" alt="スカー cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">スカー</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 188</span> <span class="badge">Key B♭m</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="where-our-blue-is-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/zuoVd2QNxJo/hqdefault.jpg" alt="青のすみか cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">青のすみか</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 150</span> <span class="badge">Key D♭</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="promise-me-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/P8ODCzh51WE/hqdefault.jpg" alt="私が明日死ぬなら cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">私が明日死ぬなら</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 188</span> <span class="badge">Key D</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="moonthief-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/ReI0eJvTQf8/hqdefault.jpg" alt="Moonthief cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">Moonthief</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 150</span> <span class="badge">Key F♯m</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="moonlight-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/8TghOw3v61k/hqdefault.jpg" alt="月光 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">月光</h2>
-        <p class="artist">キタニタツヤ × はるまきごはん</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 107</span> <span class="badge">Key G</span> <span class="badge">譜: chord-rinne</span> <span class="badge">照合50%・要オフセット確認</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="culture-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/nWoDxPNHSlE/hqdefault.jpg" alt="カルチャー cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">カルチャー</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 167</span> <span class="badge">Key E♭</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="tell-me-about-you-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/MQhd0ne_uYo/hqdefault.jpg" alt="あなたのことをおしえて cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">あなたのことをおしえて</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 214</span> <span class="badge">Key G</span> <span class="badge">譜: chord-rinne</span> <span class="badge">照合65%・要オフセット確認</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="hidane-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/hA_9r-3jkSg/hqdefault.jpg" alt="火種 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">火種</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 125</span> <span class="badge">Key Bm</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="levitation-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/l7hbIgnyhe0/hqdefault.jpg" alt="れびてーしょん cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">れびてーしょん</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 130</span> <span class="badge">Key B</span> <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="stoned-child-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/fxTwPBUvFLA/hqdefault.jpg" alt="Stoned Child cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">Stoned Child</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 97</span> <span class="badge">Key E♭</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="a-flower-in-the-mist-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/7h7562_f25k/hqdefault.jpg" alt="花の香 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">花の香</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 67</span> <span class="badge">Key E♭m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="slush-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/izuDpvaxHgg/hqdefault.jpg" alt="白無垢 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">白無垢</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 81</span> <span class="badge">Key C</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="panopticon-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/H_Z15gXv8WY/hqdefault.jpg" alt="パノプティコン cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">パノプティコン</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 107</span> <span class="badge">Key F♯</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="bad-dream-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/lkYeBXXHgY4/hqdefault.jpg" alt="悪夢 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">悪夢</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 91</span> <span class="badge">Key A</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="accomplices-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/9hzCI5TJEmQ/hqdefault.jpg" alt="逃走劇 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">逃走劇</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 115</span> <span class="badge">Key B♭m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="rapport-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/k4eSya1zIl8/hqdefault.jpg" alt="Rapport cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">Rapport</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 125</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="even-as-an-adult-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/Kk4AGOaGptQ/hqdefault.jpg" alt="大人になっても cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">大人になっても</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 115</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="inner-whirlpool-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/lnVKyT-ooWY/hqdefault.jpg" alt="冷たい渦 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">冷たい渦</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 130</span> <span class="badge">Key Em</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="pendulum-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/mLt5wf9HNzs/hqdefault.jpg" alt="振り子の上で cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">振り子の上で</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 81</span> <span class="badge">Key B♭</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="pink-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/obsbr57gB6w/hqdefault.jpg" alt="PINK cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">PINK</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 103</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="thanatophobia-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/kQDT-FbPJUI/hqdefault.jpg" alt="タナトフォビア cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">タナトフォビア</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 111</span> <span class="badge">Key Dm</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="nightwatch-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/YOCljuR-cLQ/hqdefault.jpg" alt="夜警 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">夜警</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 158</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="i-dont-want-eternity-eternally-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/cMtkX0c6v6E/hqdefault.jpg" alt="永遠 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">永遠</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 83</span> <span class="badge">Key Am</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="young-world-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/CTS5iehpQJs/hqdefault.jpg" alt="やんぐわーるど cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">やんぐわーるど</h2>
-        <p class="artist">キタニタツヤ prod. NEE</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 100</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="somewhere-far-away-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/linIKi5fpIU/hqdefault.jpg" alt="旅にでも出よっか cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">旅にでも出よっか</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 100</span> <span class="badge">Key E♭</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="the-sunset-rust-corrodes-the-room-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/qRiFX8zbTkU/hqdefault.jpg" alt="芥の部屋は錆色に沈む cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">芥の部屋は錆色に沈む</h2>
-        <p class="artist">こんにちは谷田さん feat. 鏡音リン</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 158</span> <span class="badge">Key B♭m</span> <span class="badge">譜: U-FRET</span> <span class="badge">照合64%・要オフセット確認</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="there-must-be-no-meaning-in-my-life-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/nNi19xS_BgU/hqdefault.jpg" alt="きっとこの命に意味は無かった cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">きっとこの命に意味は無かった</h2>
-        <p class="artist">こんにちは谷田さん feat. 鏡音リン</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 100</span> <span class="badge">Key G♯m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="a-sleepwalker-gazing-on-nirvana-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/ymtNhd_3CB8/hqdefault.jpg" alt="夢遊病者は此岸にて cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">夢遊病者は此岸にて</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 107</span> <span class="badge">Key A</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="hide-and-seek-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/btNYJYj4Vdw/hqdefault.jpg" alt="ハイドアンドシーク cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">ハイドアンドシーク</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 94</span> <span class="badge">Key B</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="rakka-usagi-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/0TagLwqWy-o/hqdefault.jpg" alt="落下ウサギと寡黙な傍観者の手記 cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title" style="font-size:14.5px">落下ウサギと寡黙な傍観者の手記</h2>
-        <p class="artist">こんにちは谷田さん feat. 初音ミク</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 167</span> <span class="badge">Key Em</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="early-summer-murderous-urge-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/o-MiRZF0ACg/hqdefault.jpg" alt="初夏、殺意は街を浸す病のように cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title" style="font-size:14.5px">初夏、殺意は街を浸す病のように</h2>
-        <p class="artist">こんにちは谷田さん feat. 鏡音リン</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 115</span> <span class="badge">Key F♯m</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-
-    <a class="card" href="shoujo-a-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/AqI97zHMoQw/hqdefault.jpg" alt="少女A cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">少女A</h2>
-        <p class="artist">椎名もた feat. 鏡音リン</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span>
-          <span class="badge">BPM 130</span>
-          <span class="badge">Key D♭→C（半音下げ転調）</span>
-          <span class="badge">譜: chord-rinne</span>
-        </div>
-      </div>
-    </a>
-    <a class="card" href="dead-weight-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/lXsSf0LZsBA/hqdefault.jpg" alt="デッドウェイト cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">デッドウェイト</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 115</span> <span class="badge">Key B♭m</span> <span class="badge">譜: U-FRET</span>
-        </div>
-      </div>
-    </a>
-    <a class="card" href="asphyxia-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/ksAJIsl047w/hqdefault.jpg" alt="asphyxia cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">asphyxia</h2>
-        <p class="artist">Cö shu Nie</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 155</span> <span class="badge">Key Dm</span> <span class="badge">変拍子 3/4⇄5/8</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-    <a class="card" href="itadaki-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/tGZ34jMe5r8/hqdefault.jpg" alt="頂き cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">頂き</h2>
-        <p class="artist">スーパー登山部</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 120</span> <span class="badge">Key C</span> <span class="badge">譜: ChordWiki</span>
-        </div>
-      </div>
-    </a>
-    <a class="card" href="emerald-piano-sheet.html">
-      <div class="cover"><img src="https://i.ytimg.com/vi/58TbfRY2R8Y/hqdefault.jpg" alt="エメラルド cover" loading="lazy" /></div>
-      <div class="body">
-        <h2 class="title">エメラルド</h2>
-        <p class="artist">キタニタツヤ</p>
-        <div class="badges">
-          <span class="badge hi">動画同期（実測）</span> <span class="badge">BPM 146</span> <span class="badge">Key E♭</span> <span class="badge">譜: ChordWiki＋rinne</span>
-        </div>
-      </div>
-    </a>
-
-    <!-- To add a sheet: copy a card above — cover = https://i.ytimg.com/vi/<VIDEO_ID>/hqdefault.jpg -->
-
-  </div>
-</main>
-
-<footer>
-  各シートはコード進行・拍位置・セクション構成のみを掲載（歌詞なし）。<br />
-  鍵盤図: ◉ ルート音（最低音）· 紫 = コードトーン · LH = 左手ベース音。
-</footer>
-
 </body>
 </html>
