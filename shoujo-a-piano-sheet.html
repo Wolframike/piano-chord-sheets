@@ -393,15 +393,20 @@ h2.sec small { color: var(--text-2); font-size: 13px; font-weight: 400; }
 .cc .symmini { color: var(--text-2); font-size: 12px; font-weight: 500; }
 .cc .bassnote { margin: 0 0 var(--s1); font-size: 22px; line-height: 1.2; font-weight: 500; }
 .cc svg.bkbd { max-width: var(--s9); }
+/* keyboard colours: a real-looking keyboard in both themes (deliberate exception to "dark = invert");
+   marks are mid-tone so they read on white keys, black keys and both backgrounds (all >= 3:1) */
+:root { --kb-white: #ffffff; --kb-black: #1f1f1f; --kb-gap: #cccccc; --kb-label: #666666; --kb-tone: #2563eb; --kb-root: #d9480f; --kb-on: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --kb-white: #dcdcdc; --kb-gap: #8f8f8f; --kb-label: #4d4d4d; } }
+:root[data-theme="dark"] { --kb-white: #dcdcdc; --kb-gap: #8f8f8f; --kb-label: #4d4d4d; }
 /* keyboard diagram (inline SVG, classes only) */
-.k-bg { fill: var(--border-strong); }
-.k-w { fill: var(--bg); stroke: var(--border-strong); }
-.k-b { fill: var(--text); stroke: var(--text); }
-.k-w.ch, .k-b.ch { fill: var(--cat1); stroke: var(--cat1); }
-.k-w.rt, .k-b.rt { fill: var(--ink); stroke: var(--ink); }
-.k-ring { fill: none; stroke: var(--bg); stroke-width: 1.8; }
-.k-lab { fill: var(--bg); font-weight: 500; font-family: var(--font); }
-.k-c { fill: var(--text-2); font-family: var(--font); }
+.k-bg { fill: var(--kb-gap); }
+.k-w { fill: var(--kb-white); stroke: var(--kb-gap); }
+.k-b { fill: var(--kb-black); stroke: var(--kb-black); }
+.k-w.ch, .k-b.ch { fill: var(--kb-tone); stroke: var(--kb-tone); }
+.k-w.rt, .k-b.rt { fill: var(--kb-root); stroke: var(--kb-root); }
+.k-ring { fill: none; stroke: var(--kb-on); stroke-width: 1.8; }
+.k-lab { fill: var(--kb-on); font-weight: 500; font-family: var(--font); }
+.k-c { fill: var(--kb-label); font-family: var(--font); }
 /* video dock */
 .ytdock { position: fixed; right: var(--s4); bottom: var(--s4); z-index: 30; width: calc(var(--s9) * 3 + var(--s6)); padding: var(--s3); border: 1px solid var(--border); border-radius: var(--r-md); background: var(--bg); }
 .ytdock .dock-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s2); }
@@ -495,7 +500,7 @@ body.dockopen.dockmini main#sheet { padding-bottom: calc(var(--s9) * 2 + var(--s
   <details class="legend t-small">
     <summary>凡例と注記<svg class="icon" aria-hidden="true"><use href="#i-expand_more"/></svg></summary>
     <div class="legend-body">
-      <p><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><rect class="k-w rt" x="1" y="1" width="14" height="14" rx="2"/><circle class="k-ring" cx="8" cy="8" r="3.5"/></svg>輪のついた鍵＝いちばん低い音（ルート。分数コードはベース）　<svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><rect class="k-w ch" x="1" y="1" width="14" height="14" rx="2"/></svg>青＝コードの音（C4〜C6）　左手＝左手で弾くベース音（1〜2オクターブ下）　数字＝小節の中の拍　縦線＝小節線　幅＝コードの長さ</p>
+      <p><svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><rect class="k-w rt" x="1" y="1" width="14" height="14" rx="2"/><circle class="k-ring" cx="8" cy="8" r="3.5"/></svg>輪のついた橙の鍵＝いちばん低い音（ルート。分数コードはベース）　<svg class="sw" viewBox="0 0 16 16" aria-hidden="true"><rect class="k-w ch" x="1" y="1" width="14" height="14" rx="2"/></svg>青＝コードの音（C4〜C6）　左手＝左手で弾くベース音（1〜2オクターブ下）　数字＝小節の中の拍　縦線＝小節線　幅＝コードの長さ</p>
       <p>注: chord-rinneの人力チャート × Chordify実測拍で自動整合（照合スコア68%）。タイム・小節割りは実測、コード綴りはチャート準拠。ズレを感じたらoffsetで微調整を。原曲はラスサビで半音下げ転調（D♭→C）。チャートの全編C表記を実音に正規化済み（前半D♭・終盤C）。</p>
     </div>
   </details>
